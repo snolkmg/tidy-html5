@@ -40,56 +40,19 @@
 extern "C" {
 #endif
 
-/** @addtogroup internal_api */
-/** @{ */
-
-/* MARK: - Code Generation Macros */
-/*********************************************************************
- * Code Generation Macros
- *
- * Tidy aims to provide a consistent API for library users, and so we
- * go to some lengths to provide a `tidyMessagesCodes` enum that
- * consists of the message code for every warning/error/info message
- * tha Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
- * string representations of each message code.
- *
- * We also support the addition of message codes from other modules,
- * such as from Tidy's accessibility module.
- *
- * In order to keep code maintainable and make it simple to add new
- * messages, the `tidyMessageCodes` and `tidyErrorFilterKeysStruct[]`
- * are generated dynamically with preprocessor macros defined below.
- *
- * Any visible FOREACH_MSG_* macro (including new ones) must be
- * applied to the `tidyMessageCodes` enum with the MAKE_ENUM() macro
- * in this file, and to the `tidyErrorFilterKeysStruct[]` with 
- * MAKE_STRUCT in this file.
- *
- * Modern IDE's will dynamically pre-process all of these macros,
- * enabling code-completion of these enums and array of structs.
- *********************************************************************/
-
-#define MAKE_ENUM(MESSAGE) MESSAGE,
-#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
-
-/** @} end group internal_api */
-
-
-
-/** @addtogroup public_api */
-/** @{ */
-
 /* MARK: - Public Enumerations */
 /***************************************************************************//**
  ** @defgroup public_enumerations Public Enumerations
+ ** @ingroup public_api
  **
- * @remark LibTidy does *not* guarantee the value of any enumeration member,
- * including the starting integer value, except where noted. Always use enum
- * members rather than their values!
- **
- ** @{
+ ** @remark LibTidy does *not* guarantee the value of any enumeration member,
+ ** including the starting integer value, except where noted. Always use enum
+ ** members rather than their values!
  ******************************************************************************/
 
+/** @addtogroup public_enumerations
+ ** @{ */
+    
 /** @name Configuration Options Enumerations
  **
  ** These enumerators are used to define available configuration options and
@@ -102,7 +65,8 @@ extern "C" {
  ** interfaces to sort Tidy options into related groups.
  **
  ** @remark These enum members all have associated localized strings available
- **         for internal LibTidy use. TODO: add string keys for LibTidy users.
+ **         for internal LibTidy use, suitable for use as a category label.
+ **         TODO: add string keys for LibTidy users.
  **
  ** @sa     `config.c:option_defs[]` for internal implementation details.
  */
@@ -120,7 +84,8 @@ typedef enum
 /** Option IDs are used used to get and/or set configuration option values.
  **
  ** @remark These enum members all have associated localized strings available
- **         for internal LibTidy use. TODO: add string keys for LibTidy users.
+ **         for internal LibTidy use, which describe the purpose of the option.
+ **         TODO: add string keys for LibTidy users.
  **
  ** @sa     `config.c:option_defs[]` for internal implementation details; that
  **         array is where you will implement options defined in this enum; and
@@ -260,6 +225,7 @@ typedef enum
 
 /** @}
  ** @name Configuration Options Pick List and Parser Enumerations
+ ** @ingroup public_enumerations
  **
  ** These enums define enumerated states for the configuration options that
  ** take values that are not simple yes/no, strings, or simple integers.
@@ -271,7 +237,7 @@ typedef enum
  */
 typedef enum
 {
-   TidyNoState,     /**< maps to 'no' */
+   TidyNoState = 0, /**< maps to 'no' */
    TidyYesState,    /**< maps to 'yes' */
    TidyAutoState    /**< Automatic */
 } TidyTriState;
@@ -288,7 +254,7 @@ typedef enum
  */
 typedef enum
 {
-    TidyCustomNo,           /**< Do not allow autonomous custom tags */
+    TidyCustomNo = 0,       /**< Do not allow autonomous custom tags */
     TidyCustomBlocklevel,   /**< ACT's treated as blocklevel */
     TidyCustomEmpty,        /**< ACT's treated as empty tags */
     TidyCustomInline,       /**< ACT's treated as inline tags */
@@ -301,7 +267,7 @@ typedef enum
  */
 typedef enum
 {
-    TidyLF,         /**< Use Unix style: LF */
+    TidyLF = 0,     /**< Use Unix style: LF */
     TidyCRLF,       /**< Use DOS/Windows style: CR+LF */
     TidyCR          /**< Use Macintosh style: CR */
 } TidyLineEnding;
@@ -312,12 +278,12 @@ typedef enum
  */
 typedef enum
 {
-    TidyDoctypeHtml5,   /**< <!DOCTYPE html> */
-    TidyDoctypeOmit,    /**< Omit DOCTYPE altogether */
-    TidyDoctypeAuto,    /**< Keep DOCTYPE in input.  Set version to content */
-    TidyDoctypeStrict,  /**< Convert document to HTML 4 strict content model */
-    TidyDoctypeLoose,   /**< Convert document to HTML 4 transitional content model */
-    TidyDoctypeUser     /**< Set DOCTYPE FPI explicitly */
+    TidyDoctypeHtml5 = 0, /**< <!DOCTYPE html> */
+    TidyDoctypeOmit,      /**< Omit DOCTYPE altogether */
+    TidyDoctypeAuto,      /**< Keep DOCTYPE in input.  Set version to content */
+    TidyDoctypeStrict,    /**< Convert document to HTML 4 strict content model */
+    TidyDoctypeLoose,     /**< Convert document to HTML 4 transitional content model */
+    TidyDoctypeUser       /**< Set DOCTYPE FPI explicitly */
 } TidyDoctypeModes;
 
 /** Mode controlling treatment of duplicate Attributes
@@ -325,8 +291,8 @@ typedef enum
  */
 typedef enum
 {
-    TidyKeepFirst,
-    TidyKeepLast
+    TidyKeepFirst = 0, /**< Keep the first instance of an attribute */
+    TidyKeepLast       /**< Keep the last instance of an attribute */
 } TidyDupAttrModes;
 
 /** Mode controlling treatment of sorting attributes
@@ -334,14 +300,15 @@ typedef enum
  */
 typedef enum
 {
-    TidySortAttrNone,
-    TidySortAttrAlpha
+    TidySortAttrNone = 0,  /**< Don't sort attributes */
+    TidySortAttrAlpha      /**< Sort attributes alphabetically */
 } TidyAttrSortStrategy;
 
 
-/** @} end name
+/** @}
  ** @name Document Tree
- ** @{ 
+ ** @ingroup public_enumerations
+ ** @{
  */
 
 /** Node types
@@ -493,34 +460,34 @@ typedef enum
   TidyTag_XMP,           /**< XMP */
   TidyTag_NEXTID,        /**< NEXTID */
 
-  TidyTag_ARTICLE,
-  TidyTag_ASIDE,
-  TidyTag_AUDIO,
-  TidyTag_BDI,
-  TidyTag_CANVAS,
-  TidyTag_COMMAND,
-  TidyTag_DATALIST,
-  TidyTag_DETAILS,
-  TidyTag_DIALOG,
-  TidyTag_FIGCAPTION,
-  TidyTag_FIGURE,
-  TidyTag_FOOTER,
-  TidyTag_HEADER,
-  TidyTag_HGROUP,
-  TidyTag_MAIN,
-  TidyTag_MARK,
-  TidyTag_MENUITEM,
-  TidyTag_METER,
-  TidyTag_NAV,
-  TidyTag_OUTPUT,
-  TidyTag_PROGRESS,
-  TidyTag_SECTION,
-  TidyTag_SOURCE,
-  TidyTag_SUMMARY,
-  TidyTag_TEMPLATE,
-  TidyTag_TIME,
-  TidyTag_TRACK,
-  TidyTag_VIDEO,
+  TidyTag_ARTICLE,       /**< ARTICLE */
+  TidyTag_ASIDE,         /**< ASIDE */
+  TidyTag_AUDIO,         /**< AUDIO */
+  TidyTag_BDI,           /**< BDI */
+  TidyTag_CANVAS,        /**< CANVAS */
+  TidyTag_COMMAND,       /**< COMMAND */
+  TidyTag_DATALIST,      /**< DATALIST */
+  TidyTag_DETAILS,       /**< DETAILS */
+  TidyTag_DIALOG,        /**< DIALOG */
+  TidyTag_FIGCAPTION,    /**< FIGCAPTION */
+  TidyTag_FIGURE,        /**< FIGURE */
+  TidyTag_FOOTER,        /**< FOOTER */
+  TidyTag_HEADER,        /**< HEADER */
+  TidyTag_HGROUP,        /**< HGROUP */
+  TidyTag_MAIN,          /**< MAIN */
+  TidyTag_MARK,          /**< MARK */
+  TidyTag_MENUITEM,      /**< MENUITEM */
+  TidyTag_METER,         /**< METER */
+  TidyTag_NAV,           /**< NAV */
+  TidyTag_OUTPUT,        /**< OUTPUT */
+  TidyTag_PROGRESS,      /**< PROGRESS */
+  TidyTag_SECTION,       /**< SECTION */
+  TidyTag_SOURCE,        /**< SOURCE */
+  TidyTag_SUMMARY,       /**< SUMMARY */
+  TidyTag_TEMPLATE,      /**< TEMPLATE */
+  TidyTag_TIME,          /**< TIME */
+  TidyTag_TRACK,         /**< TRACK */
+  TidyTag_VIDEO,         /**< VIDEO */
 
   N_TIDY_TAGS            /**< Must be last */
 } TidyTagId;
@@ -530,351 +497,352 @@ typedef enum
  */
 typedef enum
 {
-  TidyAttr_UNKNOWN,           /**< UNKNOWN= */
-  TidyAttr_ABBR,              /**< ABBR= */
-  TidyAttr_ACCEPT,            /**< ACCEPT= */
-  TidyAttr_ACCEPT_CHARSET,    /**< ACCEPT_CHARSET= */
-  TidyAttr_ACCESSKEY,         /**< ACCESSKEY= */
-  TidyAttr_ACTION,            /**< ACTION= */
-  TidyAttr_ADD_DATE,          /**< ADD_DATE= */
-  TidyAttr_ALIGN,             /**< ALIGN= */
-  TidyAttr_ALINK,             /**< ALINK= */
-  TidyAttr_ALLOWFULLSCREEN,   /**< ALLOWFULLSCREEN= */
-  TidyAttr_ALT,               /**< ALT= */
-  TidyAttr_ARCHIVE,           /**< ARCHIVE= */
-  TidyAttr_AXIS,              /**< AXIS= */
-  TidyAttr_BACKGROUND,        /**< BACKGROUND= */
-  TidyAttr_BGCOLOR,           /**< BGCOLOR= */
-  TidyAttr_BGPROPERTIES,      /**< BGPROPERTIES= */
-  TidyAttr_BORDER,            /**< BORDER= */
-  TidyAttr_BORDERCOLOR,       /**< BORDERCOLOR= */
-  TidyAttr_BOTTOMMARGIN,      /**< BOTTOMMARGIN= */
-  TidyAttr_CELLPADDING,       /**< CELLPADDING= */
-  TidyAttr_CELLSPACING,       /**< CELLSPACING= */
-  TidyAttr_CHAR,              /**< CHAR= */
-  TidyAttr_CHAROFF,           /**< CHAROFF= */
-  TidyAttr_CHARSET,           /**< CHARSET= */
-  TidyAttr_CHECKED,           /**< CHECKED= */
-  TidyAttr_CITE,              /**< CITE= */
-  TidyAttr_CLASS,             /**< CLASS= */
-  TidyAttr_CLASSID,           /**< CLASSID= */
-  TidyAttr_CLEAR,             /**< CLEAR= */
-  TidyAttr_CODE,              /**< CODE= */
-  TidyAttr_CODEBASE,          /**< CODEBASE= */
-  TidyAttr_CODETYPE,          /**< CODETYPE= */
-  TidyAttr_COLOR,             /**< COLOR= */
-  TidyAttr_COLS,              /**< COLS= */
-  TidyAttr_COLSPAN,           /**< COLSPAN= */
-  TidyAttr_COMPACT,           /**< COMPACT= */
-  TidyAttr_CONTENT,           /**< CONTENT= */
-  TidyAttr_COORDS,            /**< COORDS= */
-  TidyAttr_DATA,              /**< DATA= */
-  TidyAttr_DATAFLD,           /**< DATAFLD= */
-  TidyAttr_DATAFORMATAS,      /**< DATAFORMATAS= */
-  TidyAttr_DATAPAGESIZE,      /**< DATAPAGESIZE= */
-  TidyAttr_DATASRC,           /**< DATASRC= */
-  TidyAttr_DATETIME,          /**< DATETIME= */
-  TidyAttr_DECLARE,           /**< DECLARE= */
-  TidyAttr_DEFER,             /**< DEFER= */
-  TidyAttr_DIR,               /**< DIR= */
-  TidyAttr_DISABLED,          /**< DISABLED= */
-  TidyAttr_ENCODING,          /**< ENCODING= */
-  TidyAttr_ENCTYPE,           /**< ENCTYPE= */
-  TidyAttr_FACE,              /**< FACE= */
-  TidyAttr_FOR,               /**< FOR= */
-  TidyAttr_FRAME,             /**< FRAME= */
-  TidyAttr_FRAMEBORDER,       /**< FRAMEBORDER= */
-  TidyAttr_FRAMESPACING,      /**< FRAMESPACING= */
-  TidyAttr_GRIDX,             /**< GRIDX= */
-  TidyAttr_GRIDY,             /**< GRIDY= */
-  TidyAttr_HEADERS,           /**< HEADERS= */
-  TidyAttr_HEIGHT,            /**< HEIGHT= */
-  TidyAttr_HREF,              /**< HREF= */
-  TidyAttr_HREFLANG,          /**< HREFLANG= */
-  TidyAttr_HSPACE,            /**< HSPACE= */
-  TidyAttr_HTTP_EQUIV,        /**< HTTP_EQUIV= */
-  TidyAttr_ID,                /**< ID= */
-  TidyAttr_IS,                /**< IS= */
-  TidyAttr_ISMAP,             /**< ISMAP= */
-  TidyAttr_ITEMID,            /**< ITEMID= */
-  TidyAttr_ITEMPROP,          /**< ITEMPROP= */
-  TidyAttr_ITEMREF,           /**< ITEMREF= */
-  TidyAttr_ITEMSCOPE,         /**< ITEMSCOPE= */
-  TidyAttr_ITEMTYPE,          /**< ITEMTYPE= */
-  TidyAttr_LABEL,             /**< LABEL= */
-  TidyAttr_LANG,              /**< LANG= */
-  TidyAttr_LANGUAGE,          /**< LANGUAGE= */
-  TidyAttr_LAST_MODIFIED,     /**< LAST_MODIFIED= */
-  TidyAttr_LAST_VISIT,        /**< LAST_VISIT= */
-  TidyAttr_LEFTMARGIN,        /**< LEFTMARGIN= */
-  TidyAttr_LINK,              /**< LINK= */
-  TidyAttr_LONGDESC,          /**< LONGDESC= */
-  TidyAttr_LOWSRC,            /**< LOWSRC= */
-  TidyAttr_MARGINHEIGHT,      /**< MARGINHEIGHT= */
-  TidyAttr_MARGINWIDTH,       /**< MARGINWIDTH= */
-  TidyAttr_MAXLENGTH,         /**< MAXLENGTH= */
-  TidyAttr_MEDIA,             /**< MEDIA= */
-  TidyAttr_METHOD,            /**< METHOD= */
-  TidyAttr_MULTIPLE,          /**< MULTIPLE= */
-  TidyAttr_NAME,              /**< NAME= */
-  TidyAttr_NOHREF,            /**< NOHREF= */
-  TidyAttr_NORESIZE,          /**< NORESIZE= */
-  TidyAttr_NOSHADE,           /**< NOSHADE= */
-  TidyAttr_NOWRAP,            /**< NOWRAP= */
-  TidyAttr_OBJECT,            /**< OBJECT= */
-  TidyAttr_OnAFTERUPDATE,     /**< OnAFTERUPDATE= */
-  TidyAttr_OnBEFOREUNLOAD,    /**< OnBEFOREUNLOAD= */
-  TidyAttr_OnBEFOREUPDATE,    /**< OnBEFOREUPDATE= */
-  TidyAttr_OnBLUR,            /**< OnBLUR= */
-  TidyAttr_OnCHANGE,          /**< OnCHANGE= */
-  TidyAttr_OnCLICK,           /**< OnCLICK= */
-  TidyAttr_OnDATAAVAILABLE,   /**< OnDATAAVAILABLE= */
-  TidyAttr_OnDATASETCHANGED,  /**< OnDATASETCHANGED= */
-  TidyAttr_OnDATASETCOMPLETE, /**< OnDATASETCOMPLETE= */
-  TidyAttr_OnDBLCLICK,        /**< OnDBLCLICK= */
-  TidyAttr_OnERRORUPDATE,     /**< OnERRORUPDATE= */
-  TidyAttr_OnFOCUS,           /**< OnFOCUS= */
-  TidyAttr_OnKEYDOWN,         /**< OnKEYDOWN= */
-  TidyAttr_OnKEYPRESS,        /**< OnKEYPRESS= */
-  TidyAttr_OnKEYUP,           /**< OnKEYUP= */
-  TidyAttr_OnLOAD,            /**< OnLOAD= */
-  TidyAttr_OnMOUSEDOWN,       /**< OnMOUSEDOWN= */
-  TidyAttr_OnMOUSEMOVE,       /**< OnMOUSEMOVE= */
-  TidyAttr_OnMOUSEOUT,        /**< OnMOUSEOUT= */
-  TidyAttr_OnMOUSEOVER,       /**< OnMOUSEOVER= */
-  TidyAttr_OnMOUSEUP,         /**< OnMOUSEUP= */
-  TidyAttr_OnRESET,           /**< OnRESET= */
-  TidyAttr_OnROWENTER,        /**< OnROWENTER= */
-  TidyAttr_OnROWEXIT,         /**< OnROWEXIT= */
-  TidyAttr_OnSELECT,          /**< OnSELECT= */
-  TidyAttr_OnSUBMIT,          /**< OnSUBMIT= */
-  TidyAttr_OnUNLOAD,          /**< OnUNLOAD= */
-  TidyAttr_PROFILE,           /**< PROFILE= */
-  TidyAttr_PROMPT,            /**< PROMPT= */
-  TidyAttr_RBSPAN,            /**< RBSPAN= */
-  TidyAttr_READONLY,          /**< READONLY= */
-  TidyAttr_REL,               /**< REL= */
-  TidyAttr_REV,               /**< REV= */
-  TidyAttr_RIGHTMARGIN,       /**< RIGHTMARGIN= */
-  TidyAttr_ROLE,              /**< ROLE= */
-  TidyAttr_ROWS,              /**< ROWS= */
-  TidyAttr_ROWSPAN,           /**< ROWSPAN= */
-  TidyAttr_RULES,             /**< RULES= */
-  TidyAttr_SCHEME,            /**< SCHEME= */
-  TidyAttr_SCOPE,             /**< SCOPE= */
-  TidyAttr_SCROLLING,         /**< SCROLLING= */
-  TidyAttr_SELECTED,          /**< SELECTED= */
-  TidyAttr_SHAPE,             /**< SHAPE= */
-  TidyAttr_SHOWGRID,          /**< SHOWGRID= */
-  TidyAttr_SHOWGRIDX,         /**< SHOWGRIDX= */
-  TidyAttr_SHOWGRIDY,         /**< SHOWGRIDY= */
-  TidyAttr_SIZE,              /**< SIZE= */
-  TidyAttr_SPAN,              /**< SPAN= */
-  TidyAttr_SRC,               /**< SRC= */
-  TidyAttr_SRCSET,            /**< SRCSET= (HTML5) */
-  TidyAttr_STANDBY,           /**< STANDBY= */
-  TidyAttr_START,             /**< START= */
-  TidyAttr_STYLE,             /**< STYLE= */
-  TidyAttr_SUMMARY,           /**< SUMMARY= */
-  TidyAttr_TABINDEX,          /**< TABINDEX= */
-  TidyAttr_TARGET,            /**< TARGET= */
-  TidyAttr_TEXT,              /**< TEXT= */
-  TidyAttr_TITLE,             /**< TITLE= */
-  TidyAttr_TOPMARGIN,         /**< TOPMARGIN= */
-  TidyAttr_TRANSLATE,         /**< TRANSLATE= */
-  TidyAttr_TYPE,              /**< TYPE= */
-  TidyAttr_USEMAP,            /**< USEMAP= */
-  TidyAttr_VALIGN,            /**< VALIGN= */
-  TidyAttr_VALUE,             /**< VALUE= */
-  TidyAttr_VALUETYPE,         /**< VALUETYPE= */
-  TidyAttr_VERSION,           /**< VERSION= */
-  TidyAttr_VLINK,             /**< VLINK= */
-  TidyAttr_VSPACE,            /**< VSPACE= */
-  TidyAttr_WIDTH,             /**< WIDTH= */
-  TidyAttr_WRAP,              /**< WRAP= */
-  TidyAttr_XML_LANG,          /**< XML_LANG= */
-  TidyAttr_XML_SPACE,         /**< XML_SPACE= */
-  TidyAttr_XMLNS,             /**< XMLNS= */
+  TidyAttr_UNKNOWN,                /**< UNKNOWN= */
+  TidyAttr_ABBR,                   /**< ABBR= */
+  TidyAttr_ACCEPT,                 /**< ACCEPT= */
+  TidyAttr_ACCEPT_CHARSET,         /**< ACCEPT_CHARSET= */
+  TidyAttr_ACCESSKEY,              /**< ACCESSKEY= */
+  TidyAttr_ACTION,                 /**< ACTION= */
+  TidyAttr_ADD_DATE,               /**< ADD_DATE= */
+  TidyAttr_ALIGN,                  /**< ALIGN= */
+  TidyAttr_ALINK,                  /**< ALINK= */
+  TidyAttr_ALLOWFULLSCREEN,        /**< ALLOWFULLSCREEN= */
+  TidyAttr_ALT,                    /**< ALT= */
+  TidyAttr_ARCHIVE,                /**< ARCHIVE= */
+  TidyAttr_AXIS,                   /**< AXIS= */
+  TidyAttr_BACKGROUND,             /**< BACKGROUND= */
+  TidyAttr_BGCOLOR,                /**< BGCOLOR= */
+  TidyAttr_BGPROPERTIES,           /**< BGPROPERTIES= */
+  TidyAttr_BORDER,                 /**< BORDER= */
+  TidyAttr_BORDERCOLOR,            /**< BORDERCOLOR= */
+  TidyAttr_BOTTOMMARGIN,           /**< BOTTOMMARGIN= */
+  TidyAttr_CELLPADDING,            /**< CELLPADDING= */
+  TidyAttr_CELLSPACING,            /**< CELLSPACING= */
+  TidyAttr_CHAR,                   /**< CHAR= */
+  TidyAttr_CHAROFF,                /**< CHAROFF= */
+  TidyAttr_CHARSET,                /**< CHARSET= */
+  TidyAttr_CHECKED,                /**< CHECKED= */
+  TidyAttr_CITE,                   /**< CITE= */
+  TidyAttr_CLASS,                  /**< CLASS= */
+  TidyAttr_CLASSID,                /**< CLASSID= */
+  TidyAttr_CLEAR,                  /**< CLEAR= */
+  TidyAttr_CODE,                   /**< CODE= */
+  TidyAttr_CODEBASE,               /**< CODEBASE= */
+  TidyAttr_CODETYPE,               /**< CODETYPE= */
+  TidyAttr_COLOR,                  /**< COLOR= */
+  TidyAttr_COLS,                   /**< COLS= */
+  TidyAttr_COLSPAN,                /**< COLSPAN= */
+  TidyAttr_COMPACT,                /**< COMPACT= */
+  TidyAttr_CONTENT,                /**< CONTENT= */
+  TidyAttr_COORDS,                 /**< COORDS= */
+  TidyAttr_DATA,                   /**< DATA= */
+  TidyAttr_DATAFLD,                /**< DATAFLD= */
+  TidyAttr_DATAFORMATAS,           /**< DATAFORMATAS= */
+  TidyAttr_DATAPAGESIZE,           /**< DATAPAGESIZE= */
+  TidyAttr_DATASRC,                /**< DATASRC= */
+  TidyAttr_DATETIME,               /**< DATETIME= */
+  TidyAttr_DECLARE,                /**< DECLARE= */
+  TidyAttr_DEFER,                  /**< DEFER= */
+  TidyAttr_DIR,                    /**< DIR= */
+  TidyAttr_DISABLED,               /**< DISABLED= */
+  TidyAttr_ENCODING,               /**< ENCODING= */
+  TidyAttr_ENCTYPE,                /**< ENCTYPE= */
+  TidyAttr_FACE,                   /**< FACE= */
+  TidyAttr_FOR,                    /**< FOR= */
+  TidyAttr_FRAME,                  /**< FRAME= */
+  TidyAttr_FRAMEBORDER,            /**< FRAMEBORDER= */
+  TidyAttr_FRAMESPACING,           /**< FRAMESPACING= */
+  TidyAttr_GRIDX,                  /**< GRIDX= */
+  TidyAttr_GRIDY,                  /**< GRIDY= */
+  TidyAttr_HEADERS,                /**< HEADERS= */
+  TidyAttr_HEIGHT,                 /**< HEIGHT= */
+  TidyAttr_HREF,                   /**< HREF= */
+  TidyAttr_HREFLANG,               /**< HREFLANG= */
+  TidyAttr_HSPACE,                 /**< HSPACE= */
+  TidyAttr_HTTP_EQUIV,             /**< HTTP_EQUIV= */
+  TidyAttr_ID,                     /**< ID= */
+  TidyAttr_IS,                     /**< IS= */
+  TidyAttr_ISMAP,                  /**< ISMAP= */
+  TidyAttr_ITEMID,                 /**< ITEMID= */
+  TidyAttr_ITEMPROP,               /**< ITEMPROP= */
+  TidyAttr_ITEMREF,                /**< ITEMREF= */
+  TidyAttr_ITEMSCOPE,              /**< ITEMSCOPE= */
+  TidyAttr_ITEMTYPE,               /**< ITEMTYPE= */
+  TidyAttr_LABEL,                  /**< LABEL= */
+  TidyAttr_LANG,                   /**< LANG= */
+  TidyAttr_LANGUAGE,               /**< LANGUAGE= */
+  TidyAttr_LAST_MODIFIED,          /**< LAST_MODIFIED= */
+  TidyAttr_LAST_VISIT,             /**< LAST_VISIT= */
+  TidyAttr_LEFTMARGIN,             /**< LEFTMARGIN= */
+  TidyAttr_LINK,                   /**< LINK= */
+  TidyAttr_LONGDESC,               /**< LONGDESC= */
+  TidyAttr_LOWSRC,                 /**< LOWSRC= */
+  TidyAttr_MARGINHEIGHT,           /**< MARGINHEIGHT= */
+  TidyAttr_MARGINWIDTH,            /**< MARGINWIDTH= */
+  TidyAttr_MAXLENGTH,              /**< MAXLENGTH= */
+  TidyAttr_MEDIA,                  /**< MEDIA= */
+  TidyAttr_METHOD,                 /**< METHOD= */
+  TidyAttr_MULTIPLE,               /**< MULTIPLE= */
+  TidyAttr_NAME,                   /**< NAME= */
+  TidyAttr_NOHREF,                 /**< NOHREF= */
+  TidyAttr_NORESIZE,               /**< NORESIZE= */
+  TidyAttr_NOSHADE,                /**< NOSHADE= */
+  TidyAttr_NOWRAP,                 /**< NOWRAP= */
+  TidyAttr_OBJECT,                 /**< OBJECT= */
+  TidyAttr_OnAFTERUPDATE,          /**< OnAFTERUPDATE= */
+  TidyAttr_OnBEFOREUNLOAD,         /**< OnBEFOREUNLOAD= */
+  TidyAttr_OnBEFOREUPDATE,         /**< OnBEFOREUPDATE= */
+  TidyAttr_OnBLUR,                 /**< OnBLUR= */
+  TidyAttr_OnCHANGE,               /**< OnCHANGE= */
+  TidyAttr_OnCLICK,                /**< OnCLICK= */
+  TidyAttr_OnDATAAVAILABLE,        /**< OnDATAAVAILABLE= */
+  TidyAttr_OnDATASETCHANGED,       /**< OnDATASETCHANGED= */
+  TidyAttr_OnDATASETCOMPLETE,      /**< OnDATASETCOMPLETE= */
+  TidyAttr_OnDBLCLICK,             /**< OnDBLCLICK= */
+  TidyAttr_OnERRORUPDATE,          /**< OnERRORUPDATE= */
+  TidyAttr_OnFOCUS,                /**< OnFOCUS= */
+  TidyAttr_OnKEYDOWN,              /**< OnKEYDOWN= */
+  TidyAttr_OnKEYPRESS,             /**< OnKEYPRESS= */
+  TidyAttr_OnKEYUP,                /**< OnKEYUP= */
+  TidyAttr_OnLOAD,                 /**< OnLOAD= */
+  TidyAttr_OnMOUSEDOWN,            /**< OnMOUSEDOWN= */
+  TidyAttr_OnMOUSEMOVE,            /**< OnMOUSEMOVE= */
+  TidyAttr_OnMOUSEOUT,             /**< OnMOUSEOUT= */
+  TidyAttr_OnMOUSEOVER,            /**< OnMOUSEOVER= */
+  TidyAttr_OnMOUSEUP,              /**< OnMOUSEUP= */
+  TidyAttr_OnRESET,                /**< OnRESET= */
+  TidyAttr_OnROWENTER,             /**< OnROWENTER= */
+  TidyAttr_OnROWEXIT,              /**< OnROWEXIT= */
+  TidyAttr_OnSELECT,               /**< OnSELECT= */
+  TidyAttr_OnSUBMIT,               /**< OnSUBMIT= */
+  TidyAttr_OnUNLOAD,               /**< OnUNLOAD= */
+  TidyAttr_PROFILE,                /**< PROFILE= */
+  TidyAttr_PROMPT,                 /**< PROMPT= */
+  TidyAttr_RBSPAN,                 /**< RBSPAN= */
+  TidyAttr_READONLY,               /**< READONLY= */
+  TidyAttr_REL,                    /**< REL= */
+  TidyAttr_REV,                    /**< REV= */
+  TidyAttr_RIGHTMARGIN,            /**< RIGHTMARGIN= */
+  TidyAttr_ROLE,                   /**< ROLE= */
+  TidyAttr_ROWS,                   /**< ROWS= */
+  TidyAttr_ROWSPAN,                /**< ROWSPAN= */
+  TidyAttr_RULES,                  /**< RULES= */
+  TidyAttr_SCHEME,                 /**< SCHEME= */
+  TidyAttr_SCOPE,                  /**< SCOPE= */
+  TidyAttr_SCROLLING,              /**< SCROLLING= */
+  TidyAttr_SELECTED,               /**< SELECTED= */
+  TidyAttr_SHAPE,                  /**< SHAPE= */
+  TidyAttr_SHOWGRID,               /**< SHOWGRID= */
+  TidyAttr_SHOWGRIDX,              /**< SHOWGRIDX= */
+  TidyAttr_SHOWGRIDY,              /**< SHOWGRIDY= */
+  TidyAttr_SIZE,                   /**< SIZE= */
+  TidyAttr_SPAN,                   /**< SPAN= */
+  TidyAttr_SRC,                    /**< SRC= */
+  TidyAttr_SRCSET,                 /**< SRCSET= (HTML5) */
+  TidyAttr_STANDBY,                /**< STANDBY= */
+  TidyAttr_START,                  /**< START= */
+  TidyAttr_STYLE,                  /**< STYLE= */
+  TidyAttr_SUMMARY,                /**< SUMMARY= */
+  TidyAttr_TABINDEX,               /**< TABINDEX= */
+  TidyAttr_TARGET,                 /**< TARGET= */
+  TidyAttr_TEXT,                   /**< TEXT= */
+  TidyAttr_TITLE,                  /**< TITLE= */
+  TidyAttr_TOPMARGIN,              /**< TOPMARGIN= */
+  TidyAttr_TRANSLATE,              /**< TRANSLATE= */
+  TidyAttr_TYPE,                   /**< TYPE= */
+  TidyAttr_USEMAP,                 /**< USEMAP= */
+  TidyAttr_VALIGN,                 /**< VALIGN= */
+  TidyAttr_VALUE,                  /**< VALUE= */
+  TidyAttr_VALUETYPE,              /**< VALUETYPE= */
+  TidyAttr_VERSION,                /**< VERSION= */
+  TidyAttr_VLINK,                  /**< VLINK= */
+  TidyAttr_VSPACE,                 /**< VSPACE= */
+  TidyAttr_WIDTH,                  /**< WIDTH= */
+  TidyAttr_WRAP,                   /**< WRAP= */
+  TidyAttr_XML_LANG,               /**< XML_LANG= */
+  TidyAttr_XML_SPACE,              /**< XML_SPACE= */
+  TidyAttr_XMLNS,                  /**< XMLNS= */
+     
+  TidyAttr_EVENT,                  /**< EVENT= */
+  TidyAttr_METHODS,                /**< METHODS= */
+  TidyAttr_N,                      /**< N= */
+  TidyAttr_SDAFORM,                /**< SDAFORM= */
+  TidyAttr_SDAPREF,                /**< SDAPREF= */
+  TidyAttr_SDASUFF,                /**< SDASUFF= */
+  TidyAttr_URN,                    /**< URN= */
 
-  TidyAttr_EVENT,             /**< EVENT= */
-  TidyAttr_METHODS,           /**< METHODS= */
-  TidyAttr_N,                 /**< N= */
-  TidyAttr_SDAFORM,           /**< SDAFORM= */
-  TidyAttr_SDAPREF,           /**< SDAPREF= */
-  TidyAttr_SDASUFF,           /**< SDASUFF= */
-  TidyAttr_URN,               /**< URN= */
-
-  TidyAttr_ASYNC,
-  TidyAttr_AUTOCOMPLETE,
-  TidyAttr_AUTOFOCUS,
-  TidyAttr_AUTOPLAY,
-  TidyAttr_CHALLENGE,
-  TidyAttr_CONTENTEDITABLE,
-  TidyAttr_CONTEXTMENU,
-  TidyAttr_CONTROLS,
-  TidyAttr_CROSSORIGIN,       /**< CROSSORIGIN= */
-  TidyAttr_DEFAULT,
-  TidyAttr_DIRNAME,
-  TidyAttr_DRAGGABLE,
-  TidyAttr_DROPZONE,
-  TidyAttr_FORM,
-  TidyAttr_FORMACTION,
-  TidyAttr_FORMENCTYPE,
-  TidyAttr_FORMMETHOD,
-  TidyAttr_FORMNOVALIDATE,
-  TidyAttr_FORMTARGET,
-  TidyAttr_HIDDEN,
-  TidyAttr_HIGH,
-  TidyAttr_ICON,
-  TidyAttr_KEYTYPE,
-  TidyAttr_KIND,
-  TidyAttr_LIST,
-  TidyAttr_LOOP,
-  TidyAttr_LOW,
-  TidyAttr_MANIFEST,
-  TidyAttr_MAX,
-  TidyAttr_MEDIAGROUP,
-  TidyAttr_MIN,
-  TidyAttr_NOVALIDATE,
-  TidyAttr_OPEN,
-  TidyAttr_OPTIMUM,
-  TidyAttr_OnABORT,
-  TidyAttr_OnAFTERPRINT,
-  TidyAttr_OnBEFOREPRINT,
-  TidyAttr_OnCANPLAY,
-  TidyAttr_OnCANPLAYTHROUGH,
-  TidyAttr_OnCONTEXTMENU,
-  TidyAttr_OnCUECHANGE,
-  TidyAttr_OnDRAG,
-  TidyAttr_OnDRAGEND,
-  TidyAttr_OnDRAGENTER,
-  TidyAttr_OnDRAGLEAVE,
-  TidyAttr_OnDRAGOVER,
-  TidyAttr_OnDRAGSTART,
-  TidyAttr_OnDROP,
-  TidyAttr_OnDURATIONCHANGE,
-  TidyAttr_OnEMPTIED,
-  TidyAttr_OnENDED,
-  TidyAttr_OnERROR,
-  TidyAttr_OnHASHCHANGE,
-  TidyAttr_OnINPUT,
-  TidyAttr_OnINVALID,
-  TidyAttr_OnLOADEDDATA,
-  TidyAttr_OnLOADEDMETADATA,
-  TidyAttr_OnLOADSTART,
-  TidyAttr_OnMESSAGE,
-  TidyAttr_OnMOUSEWHEEL,
-  TidyAttr_OnOFFLINE,
-  TidyAttr_OnONLINE,
-  TidyAttr_OnPAGEHIDE,
-  TidyAttr_OnPAGESHOW,
-  TidyAttr_OnPAUSE,
-  TidyAttr_OnPLAY,
-  TidyAttr_OnPLAYING,
-  TidyAttr_OnPOPSTATE,
-  TidyAttr_OnPROGRESS,
-  TidyAttr_OnRATECHANGE,
-  TidyAttr_OnREADYSTATECHANGE,
-  TidyAttr_OnREDO,
-  TidyAttr_OnRESIZE,
-  TidyAttr_OnSCROLL,
-  TidyAttr_OnSEEKED,
-  TidyAttr_OnSEEKING,
-  TidyAttr_OnSHOW,
-  TidyAttr_OnSTALLED,
-  TidyAttr_OnSTORAGE,
-  TidyAttr_OnSUSPEND,
-  TidyAttr_OnTIMEUPDATE,
-  TidyAttr_OnUNDO,
-  TidyAttr_OnVOLUMECHANGE,
-  TidyAttr_OnWAITING,
-  TidyAttr_PATTERN,
-  TidyAttr_PLACEHOLDER,
-  TidyAttr_POSTER,
-  TidyAttr_PRELOAD,
-  TidyAttr_PUBDATE,
-  TidyAttr_RADIOGROUP,
-  TidyAttr_REQUIRED,
-  TidyAttr_REVERSED,
-  TidyAttr_SANDBOX,
-  TidyAttr_SCOPED,
-  TidyAttr_SEAMLESS,
-  TidyAttr_SIZES,
-  TidyAttr_SPELLCHECK,
-  TidyAttr_SRCDOC,
-  TidyAttr_SRCLANG,
-  TidyAttr_STEP,
-  TidyAttr_ARIA_ACTIVEDESCENDANT,
-  TidyAttr_ARIA_ATOMIC,
-  TidyAttr_ARIA_AUTOCOMPLETE,
-  TidyAttr_ARIA_BUSY,
-  TidyAttr_ARIA_CHECKED,
-  TidyAttr_ARIA_CONTROLS,
-  TidyAttr_ARIA_DESCRIBEDBY,
-  TidyAttr_ARIA_DISABLED,
-  TidyAttr_ARIA_DROPEFFECT,
-  TidyAttr_ARIA_EXPANDED,
-  TidyAttr_ARIA_FLOWTO,
-  TidyAttr_ARIA_GRABBED,
-  TidyAttr_ARIA_HASPOPUP,
-  TidyAttr_ARIA_HIDDEN,
-  TidyAttr_ARIA_INVALID,
-  TidyAttr_ARIA_LABEL,
-  TidyAttr_ARIA_LABELLEDBY,
-  TidyAttr_ARIA_LEVEL,
-  TidyAttr_ARIA_LIVE,
-  TidyAttr_ARIA_MULTILINE,
-  TidyAttr_ARIA_MULTISELECTABLE,
-  TidyAttr_ARIA_ORIENTATION,
-  TidyAttr_ARIA_OWNS,
-  TidyAttr_ARIA_POSINSET,
-  TidyAttr_ARIA_PRESSED,
-  TidyAttr_ARIA_READONLY,
-  TidyAttr_ARIA_RELEVANT,
-  TidyAttr_ARIA_REQUIRED,
-  TidyAttr_ARIA_SELECTED,
-  TidyAttr_ARIA_SETSIZE,
-  TidyAttr_ARIA_SORT,
-  TidyAttr_ARIA_VALUEMAX,
-  TidyAttr_ARIA_VALUEMIN,
-  TidyAttr_ARIA_VALUENOW,
-  TidyAttr_ARIA_VALUETEXT,
+  TidyAttr_ASYNC,                  /**< ASYNC= */
+  TidyAttr_AUTOCOMPLETE,           /**< AUTOCOMPLETE= */
+  TidyAttr_AUTOFOCUS,              /**< AUTOFOCUS= */
+  TidyAttr_AUTOPLAY,               /**< AUTOPLAY= */
+  TidyAttr_CHALLENGE,              /**< CHALLENGE= */
+  TidyAttr_CONTENTEDITABLE,        /**< CONTENTEDITABLE= */
+  TidyAttr_CONTEXTMENU,            /**< CONTEXTMENU= */
+  TidyAttr_CONTROLS,               /**< CONTROLS= */
+  TidyAttr_CROSSORIGIN,            /**< CROSSORIGIN= */
+  TidyAttr_DEFAULT,                /**< DEFAULT= */
+  TidyAttr_DIRNAME,                /**< DIRNAME= */
+  TidyAttr_DRAGGABLE,              /**< DRAGGABLE= */
+  TidyAttr_DROPZONE,               /**< DROPZONE= */
+  TidyAttr_FORM,                   /**< FORM= */
+  TidyAttr_FORMACTION,             /**< FORMACTION= */
+  TidyAttr_FORMENCTYPE,            /**< FORMENCTYPE= */
+  TidyAttr_FORMMETHOD,             /**< FORMMETHOD= */
+  TidyAttr_FORMNOVALIDATE,         /**< FORMNOVALIDATE= */
+  TidyAttr_FORMTARGET,             /**< FORMTARGET= */
+  TidyAttr_HIDDEN,                 /**< HIDDEN= */
+  TidyAttr_HIGH,                   /**< HIGH= */
+  TidyAttr_ICON,                   /**< ICON= */
+  TidyAttr_KEYTYPE,                /**< KEYTYPE= */
+  TidyAttr_KIND,                   /**< KIND= */
+  TidyAttr_LIST,                   /**< LIST= */
+  TidyAttr_LOOP,                   /**< LOOP= */
+  TidyAttr_LOW,                    /**< LOW= */
+  TidyAttr_MANIFEST,               /**< MANIFEST= */
+  TidyAttr_MAX,                    /**< MAX= */
+  TidyAttr_MEDIAGROUP,             /**< MEDIAGROUP= */
+  TidyAttr_MIN,                    /**< MIN= */
+  TidyAttr_NOVALIDATE,             /**< NOVALIDATE= */
+  TidyAttr_OPEN,                   /**< OPEN= */
+  TidyAttr_OPTIMUM,                /**< OPTIMUM= */
+  TidyAttr_OnABORT,                /**< OnABORT= */
+  TidyAttr_OnAFTERPRINT,           /**< OnAFTERPRINT= */
+  TidyAttr_OnBEFOREPRINT,          /**< OnBEFOREPRINT= */
+  TidyAttr_OnCANPLAY,              /**< OnCANPLAY= */
+  TidyAttr_OnCANPLAYTHROUGH,       /**< OnCANPLAYTHROUGH= */
+  TidyAttr_OnCONTEXTMENU,          /**< OnCONTEXTMENU= */
+  TidyAttr_OnCUECHANGE,            /**< OnCUECHANGE= */
+  TidyAttr_OnDRAG,                 /**< OnDRAG= */
+  TidyAttr_OnDRAGEND,              /**< OnDRAGEND= */
+  TidyAttr_OnDRAGENTER,            /**< OnDRAGENTER= */
+  TidyAttr_OnDRAGLEAVE,            /**< OnDRAGLEAVE= */
+  TidyAttr_OnDRAGOVER,             /**< OnDRAGOVER= */
+  TidyAttr_OnDRAGSTART,            /**< OnDRAGSTART= */
+  TidyAttr_OnDROP,                 /**< OnDROP= */
+  TidyAttr_OnDURATIONCHANGE,       /**< OnDURATIONCHANGE= */
+  TidyAttr_OnEMPTIED,              /**< OnEMPTIED= */
+  TidyAttr_OnENDED,                /**< OnENDED= */
+  TidyAttr_OnERROR,                /**< OnERROR= */
+  TidyAttr_OnHASHCHANGE,           /**< OnHASHCHANGE= */
+  TidyAttr_OnINPUT,                /**< OnINPUT= */
+  TidyAttr_OnINVALID,              /**< OnINVALID= */
+  TidyAttr_OnLOADEDDATA,           /**< OnLOADEDDATA= */
+  TidyAttr_OnLOADEDMETADATA,       /**< OnLOADEDMETADATA= */
+  TidyAttr_OnLOADSTART,            /**< OnLOADSTART= */
+  TidyAttr_OnMESSAGE,              /**< OnMESSAGE= */
+  TidyAttr_OnMOUSEWHEEL,           /**< OnMOUSEWHEEL= */
+  TidyAttr_OnOFFLINE,              /**< OnOFFLINE= */
+  TidyAttr_OnONLINE,               /**< OnONLINE= */
+  TidyAttr_OnPAGEHIDE,             /**< OnPAGEHIDE= */
+  TidyAttr_OnPAGESHOW,             /**< OnPAGESHOW= */
+  TidyAttr_OnPAUSE,                /**< OnPAUSE= */
+  TidyAttr_OnPLAY,                 /**< OnPLAY= */
+  TidyAttr_OnPLAYING,              /**< OnPLAYING= */
+  TidyAttr_OnPOPSTATE,             /**< OnPOPSTATE= */
+  TidyAttr_OnPROGRESS,             /**< OnPROGRESS= */
+  TidyAttr_OnRATECHANGE,           /**< OnRATECHANGE= */
+  TidyAttr_OnREADYSTATECHANGE,     /**< OnREADYSTATECHANGE= */
+  TidyAttr_OnREDO,                 /**< OnREDO= */
+  TidyAttr_OnRESIZE,               /**< OnRESIZE= */
+  TidyAttr_OnSCROLL,               /**< OnSCROLL= */
+  TidyAttr_OnSEEKED,               /**< OnSEEKED= */
+  TidyAttr_OnSEEKING,              /**< OnSEEKING= */
+  TidyAttr_OnSHOW,                 /**< OnSHOW= */
+  TidyAttr_OnSTALLED,              /**< OnSTALLED= */
+  TidyAttr_OnSTORAGE,              /**< OnSTORAGE= */
+  TidyAttr_OnSUSPEND,              /**< OnSUSPEND= */
+  TidyAttr_OnTIMEUPDATE,           /**< OnTIMEUPDATE= */
+  TidyAttr_OnUNDO,                 /**< OnUNDO= */
+  TidyAttr_OnVOLUMECHANGE,         /**< OnVOLUMECHANGE= */
+  TidyAttr_OnWAITING,              /**< OnWAITING= */
+  TidyAttr_PATTERN,                /**< PATTERN= */
+  TidyAttr_PLACEHOLDER,            /**< PLACEHOLDER= */
+  TidyAttr_POSTER,                 /**< POSTER= */
+  TidyAttr_PRELOAD,                /**< PRELOAD= */
+  TidyAttr_PUBDATE,                /**< PUBDATE= */
+  TidyAttr_RADIOGROUP,             /**< RADIOGROUP= */
+  TidyAttr_REQUIRED,               /**< REQUIRED= */
+  TidyAttr_REVERSED,               /**< REVERSED= */
+  TidyAttr_SANDBOX,                /**< SANDBOX= */
+  TidyAttr_SCOPED,                 /**< SCOPED= */
+  TidyAttr_SEAMLESS,               /**< SEAMLESS= */
+  TidyAttr_SIZES,                  /**< SIZES= */
+  TidyAttr_SPELLCHECK,             /**< SPELLCHECK= */
+  TidyAttr_SRCDOC,                 /**< SRCDOC= */
+  TidyAttr_SRCLANG,                /**< SRCLANG= */
+  TidyAttr_STEP,                   /**< STEP= */
+  TidyAttr_ARIA_ACTIVEDESCENDANT,  /**< ARIA_ACTIVEDESCENDANT */
+  TidyAttr_ARIA_ATOMIC,            /**< ARIA_ATOMIC= */
+  TidyAttr_ARIA_AUTOCOMPLETE,      /**< ARIA_AUTOCOMPLETE= */
+  TidyAttr_ARIA_BUSY,              /**< ARIA_BUSY= */
+  TidyAttr_ARIA_CHECKED,           /**< ARIA_CHECKED= */
+  TidyAttr_ARIA_CONTROLS,          /**< ARIA_CONTROLS= */
+  TidyAttr_ARIA_DESCRIBEDBY,       /**< ARIA_DESCRIBEDBY= */
+  TidyAttr_ARIA_DISABLED,          /**< ARIA_DISABLED= */
+  TidyAttr_ARIA_DROPEFFECT,        /**< ARIA_DROPEFFECT= */
+  TidyAttr_ARIA_EXPANDED,          /**< ARIA_EXPANDED= */
+  TidyAttr_ARIA_FLOWTO,            /**< ARIA_FLOWTO= */
+  TidyAttr_ARIA_GRABBED,           /**< ARIA_GRABBED= */
+  TidyAttr_ARIA_HASPOPUP,          /**< ARIA_HASPOPUP= */
+  TidyAttr_ARIA_HIDDEN,            /**< ARIA_HIDDEN= */
+  TidyAttr_ARIA_INVALID,           /**< ARIA_INVALID= */
+  TidyAttr_ARIA_LABEL,             /**< ARIA_LABEL= */
+  TidyAttr_ARIA_LABELLEDBY,        /**< ARIA_LABELLEDBY= */
+  TidyAttr_ARIA_LEVEL,             /**< ARIA_LEVEL= */
+  TidyAttr_ARIA_LIVE,              /**< ARIA_LIVE= */
+  TidyAttr_ARIA_MULTILINE,         /**< ARIA_MULTILINE= */
+  TidyAttr_ARIA_MULTISELECTABLE,   /**< ARIA_MULTISELECTABLE= */
+  TidyAttr_ARIA_ORIENTATION,       /**< ARIA_ORIENTATION= */
+  TidyAttr_ARIA_OWNS,              /**< ARIA_OWNS= */
+  TidyAttr_ARIA_POSINSET,          /**< ARIA_POSINSET= */
+  TidyAttr_ARIA_PRESSED,           /**< ARIA_PRESSED= */
+  TidyAttr_ARIA_READONLY,          /**< ARIA_READONLY= */
+  TidyAttr_ARIA_RELEVANT,          /**< ARIA_RELEVANT= */
+  TidyAttr_ARIA_REQUIRED,          /**< ARIA_REQUIRED= */
+  TidyAttr_ARIA_SELECTED,          /**< ARIA_SELECTED= */
+  TidyAttr_ARIA_SETSIZE,           /**< ARIA_SETSIZE= */
+  TidyAttr_ARIA_SORT,              /**< ARIA_SORT= */
+  TidyAttr_ARIA_VALUEMAX,          /**< ARIA_VALUEMAX= */
+  TidyAttr_ARIA_VALUEMIN,          /**< ARIA_VALUEMIN= */
+  TidyAttr_ARIA_VALUENOW,          /**< ARIA_VALUENOW= */
+  TidyAttr_ARIA_VALUETEXT,         /**< ARIA_VALUETEXT= */
 
   /* SVG attributes (SVG 1.1) */
-  TidyAttr_X,                   /**< X= */
-  TidyAttr_Y,                   /**< Y= */
-  TidyAttr_VIEWBOX,             /**< VIEWBOX= */
-  TidyAttr_PRESERVEASPECTRATIO, /**< PRESERVEASPECTRATIO= */
-  TidyAttr_ZOOMANDPAN,          /**< ZOOMANDPAN= */
-  TidyAttr_BASEPROFILE,         /**< BASEPROFILE= */
-  TidyAttr_CONTENTSCRIPTTYPE,   /**< CONTENTSCRIPTTYPE= */
-  TidyAttr_CONTENTSTYLETYPE,    /**< CONTENTSTYLETYPE= */
+  TidyAttr_X,                      /**< X= */
+  TidyAttr_Y,                      /**< Y= */
+  TidyAttr_VIEWBOX,                /**< VIEWBOX= */
+  TidyAttr_PRESERVEASPECTRATIO,    /**< PRESERVEASPECTRATIO= */
+  TidyAttr_ZOOMANDPAN,             /**< ZOOMANDPAN= */
+  TidyAttr_BASEPROFILE,            /**< BASEPROFILE= */
+  TidyAttr_CONTENTSCRIPTTYPE,      /**< CONTENTSCRIPTTYPE= */
+  TidyAttr_CONTENTSTYLETYPE,       /**< CONTENTSTYLETYPE= */
 
   /* MathML <math> attributes */
-  TidyAttr_DISPLAY,             /**< DISPLAY= (html5) */
+  TidyAttr_DISPLAY,                /**< DISPLAY= (html5) */
 
   /* RDFa global attributes */
-  TidyAttr_ABOUT,               /**< ABOUT= */
-  TidyAttr_DATATYPE,            /**< DATATYPE= */
-  TidyAttr_INLIST,              /**< INLIST= */
-  TidyAttr_PREFIX,              /**< PREFIX= */
-  TidyAttr_PROPERTY,            /**< PROPERTY= */
-  TidyAttr_RESOURCE,            /**< RESOURCE= */
-  TidyAttr_TYPEOF,              /**< TYPEOF= */
-  TidyAttr_VOCAB,               /**< VOCAB= */
-
-  TidyAttr_INTEGRITY,           /**< INTEGRITY= */
-
-  TidyAttr_AS,                  /**< AS= */
-
-  TidyAttr_XMLNSXLINK,          /**< svg xmls:xlink="url" */
-
-  N_TIDY_ATTRIBS                /**< Must be last */
+  TidyAttr_ABOUT,                  /**< ABOUT= */
+  TidyAttr_DATATYPE,               /**< DATATYPE= */
+  TidyAttr_INLIST,                 /**< INLIST= */
+  TidyAttr_PREFIX,                 /**< PREFIX= */
+  TidyAttr_PROPERTY,               /**< PROPERTY= */
+  TidyAttr_RESOURCE,               /**< RESOURCE= */
+  TidyAttr_TYPEOF,                 /**< TYPEOF= */
+  TidyAttr_VOCAB,                  /**< VOCAB= */
+   
+  TidyAttr_INTEGRITY,              /**< INTEGRITY= */
+   
+  TidyAttr_AS,                     /**< AS= */
+   
+  TidyAttr_XMLNSXLINK,             /**< svg xmls:xlink="url" */
+   
+  N_TIDY_ATTRIBS                   /**< Must be last */
 } TidyAttrId;
 
     
 /** @}
  ** @name I/O and Message Handling Interface
+ ** @ingroup public_enumerations
  **
  ** Messages used throughout LibTidy and exposed to the public API have
  ** attributes which are communicated with these enumerations.
@@ -887,7 +855,8 @@ typedef enum
  ** or status of a message
  **
  ** @remark These enum members all have associated localized strings available
- **         for internal LibTidy use, and also have public string keys.
+ **         for internal LibTidy use, and also have public string keys. These
+ **         strings are suitable for use as labels.
  */
 typedef enum
 {
@@ -920,10 +889,42 @@ typedef enum
 } TidyFormatParameterType;
 
 
-/** @}
- ** @name Messages and Localization
- ** @{ 
- */
+/** @} */
+/** @} end group public_enumerations*/
+
+    
+/** @addtogroup internal_api */
+/** @{ */
+
+/* MARK: - Code Generation Macros */
+/*********************************************************************
+ * Code Generation Macros
+ *
+ * Tidy aims to provide a consistent API for library users, and so we
+ * go to some lengths to provide a `tidyMessagesCodes` enum that
+ * consists of the message code for every warning/error/info message
+ * tha Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
+ * string representations of each message code.
+ *
+ * We also support the addition of message codes from other modules,
+ * such as from Tidy's accessibility module.
+ *
+ * In order to keep code maintainable and make it simple to add new
+ * messages, the `tidyMessageCodes` and `tidyErrorFilterKeysStruct[]`
+ * are generated dynamically with preprocessor macros defined below.
+ *
+ * Any visible FOREACH_MSG_* macro (including new ones) must be
+ * applied to the `tidyMessageCodes` enum with the MAKE_ENUM() macro
+ * in this file, and to the `tidyErrorFilterKeysStruct[]` with 
+ * MAKE_STRUCT in this file.
+ *
+ * Modern IDE's will dynamically pre-process all of these macros,
+ * enabling code-completion of these enums and array of structs.
+ *********************************************************************/
+
+#define MAKE_ENUM(MESSAGE) MESSAGE,
+#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
+
 
 
 /*********************************************************************
@@ -934,8 +935,6 @@ typedef enum
  * output by Tidy in its report table and via the message filter
  * callback.
  *********************************************************************/
-
-/** @cond DOXYGEN_SHOULD_SKIP_THIS */
 
 /* message codes for entities/numeric character references */
 #define FOREACH_MSG_ENTITIES(FN)    \
@@ -1199,36 +1198,6 @@ typedef enum
 /* [13.10.1.1] */   FN(SKIPOVER_ASCII_ART)
 
 
-/** @endcond */
-
-
-/*********************************************************************//**
- * `tidyMessageCodes`
- *
- * The actual definition of the enumeration, generated dynamically
- * per the notes above.
- *********************************************************************/
-typedef enum
-{
-    /* This MUST be present and first. */
-    tidyMessageCodes_first = 500,
-    
-    FOREACH_MSG_ENTITIES(MAKE_ENUM)
-    FOREACH_MSG_ELEMENT(MAKE_ENUM)
-    FOREACH_MSG_ATTRIBUTE(MAKE_ENUM)
-    FOREACH_MSG_ENCODING(MAKE_ENUM)
-    FOREACH_MSG_OTHER(MAKE_ENUM)
-    
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    /* Defined in `access.h` */
-    FOREACH_MSG_ACCESS(MAKE_ENUM)
-#endif
-    
-    /* This MUST be present and last. */
-    tidyMessageCodes_last
-} tidyMessageCodes;
-
-
 /*********************************************************************
  * These `tidyMessagesMisc` are used throughout libtidy, and also have
  * associated localized strings to describe them.
@@ -1280,20 +1249,7 @@ typedef enum
 /* Explanatory text. */                              FN(TEXT_VENDOR_CHARS)          \
 /* Explanatory text. */                              FN(TEXT_WINDOWS_CHARS)
 
-/** This is tidyMessagesMisc */
-typedef enum
-{
-    /* This MUST be present and first. */
-    tidyMessagesMisc_first = tidyMessageCodes_last,
-    
-    FOREACH_MSG_MISC(MAKE_ENUM)
 
-    /* This MUST be present and last. */
-    tidyMessagesMisc_last
-} tidyMessagesMisc;
-
-
-#if SUPPORT_CONSOLE_APP
 /*********************************************************************
  * These `tidyConsoleMessages` are used throughout libtidy, and also
  * have associated localized strings to describe them.
@@ -1302,7 +1258,7 @@ typedef enum
  * Tidy console application. It it possible to build LibTidy without
  * these strings.
  *********************************************************************/
-/** @cond DOXYGEN_SHOULD_SKIP_THIS */
+#if SUPPORT_CONSOLE_APP
 #define FOREACH_MSG_CONSOLE(FN)             \
         FN(TC_LABEL_COL)                    \
         FN(TC_LABEL_FILE)                   \
@@ -1384,7 +1340,60 @@ typedef enum
         FN(TC_TXT_HELP_LANG_1)              \
         FN(TC_TXT_HELP_LANG_2)              \
         FN(TC_TXT_HELP_LANG_3)
-/** @endcond */
+#endif /* SUPPORT_CONSOLE_APP */
+    
+/** @} end group internal_api */
+    
+    
+/* MARK: - Public Enumerations (con't) */
+/** @addtogroup public_enumerations
+ ** @{ */
+
+/** @name Messages 
+ ** @{ */
+
+/*********************************************************************//**
+ * `tidyMessageCodes`
+ *
+ * The actual definition of the enumeration, generated dynamically
+ * per the notes above.
+ *********************************************************************/
+typedef enum
+{
+    /* This MUST be present and first. */
+    tidyMessageCodes_first = 500,
+    
+    FOREACH_MSG_ENTITIES(MAKE_ENUM)
+    FOREACH_MSG_ELEMENT(MAKE_ENUM)
+    FOREACH_MSG_ATTRIBUTE(MAKE_ENUM)
+    FOREACH_MSG_ENCODING(MAKE_ENUM)
+    FOREACH_MSG_OTHER(MAKE_ENUM)
+    
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    /* Defined in `access.h` */
+    FOREACH_MSG_ACCESS(MAKE_ENUM)
+#endif
+    
+    /* This MUST be present and last. */
+    tidyMessageCodes_last
+} tidyMessageCodes;
+
+
+
+/** This is tidyMessagesMisc */
+typedef enum
+{
+    /* This MUST be present and first. */
+    tidyMessagesMisc_first = tidyMessageCodes_last,
+    
+    FOREACH_MSG_MISC(MAKE_ENUM)
+
+    /* This MUST be present and last. */
+    tidyMessagesMisc_last
+} tidyMessagesMisc;
+
+
+#if SUPPORT_CONSOLE_APP
 
 typedef enum
 {
@@ -1398,12 +1407,10 @@ typedef enum
 } tidyConsoleMessages;
 
 #endif /* SUPPORT_CONSOLE_APP */
-
-/** @} end name */
-
+    
+/** @} */
 /** @} end group public_enumerations */
 
-/** @} end group public_api */
 
 #ifdef __cplusplus
 }  /* extern "C" */
