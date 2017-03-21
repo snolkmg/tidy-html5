@@ -45,9 +45,7 @@ extern "C" {
  ** @defgroup public_enumerations Public Enumerations
  ** @ingroup public_api
  **
- ** @remark LibTidy does *not* guarantee the value of any enumeration member,
- ** including the starting integer value, except where noted. Always use enum
- ** members rather than their values!
+ ** @copybrief tidyenum.h
  ******************************************************************************/
 
 /** @addtogroup public_enumerations
@@ -56,7 +54,7 @@ extern "C" {
 /** @name Configuration Options Enumerations
  **
  ** These enumerators are used to define available configuration options and
- ** thier option categories.
+ ** their option categories.
  **
  ** @{ */
 
@@ -225,7 +223,6 @@ typedef enum
 
 /** @}
  ** @name Configuration Options Pick List and Parser Enumerations
- ** @ingroup public_enumerations
  **
  ** These enums define enumerated states for the configuration options that
  ** take values that are not simple yes/no, strings, or simple integers.
@@ -307,7 +304,6 @@ typedef enum
 
 /** @}
  ** @name Document Tree
- ** @ingroup public_enumerations
  ** @{
  */
 
@@ -842,7 +838,6 @@ typedef enum
     
 /** @}
  ** @name I/O and Message Handling Interface
- ** @ingroup public_enumerations
  **
  ** Messages used throughout LibTidy and exposed to the public API have
  ** attributes which are communicated with these enumerations.
