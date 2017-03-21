@@ -26,7 +26,7 @@
  *          This wouldn't have been possible without your help.
  *
  * @copyright
- *     Copyright (c) 1998-2016 World Wide Web Consortium (Massachusetts
+ *     Copyright (c) 1998-2017 World Wide Web Consortium (Massachusetts
  *     Institute of Technology, European Research Consortium for Informatics
  *     and Mathematics, Keio University).
  * @par

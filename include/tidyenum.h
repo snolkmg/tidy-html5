@@ -1,64 +1,135 @@
 #ifndef __TIDYENUM_H__
 #define __TIDYENUM_H__
 
-/*********************************************************************
- * Separated public enumerations header
+/**************************************************************************//**
+ * @file
+ * Separated public enumerations header providing important indentifiers for
+ * LibTidy and internal users, as well as code-generator macros used to
+ * generate many of them.
  *
- * Simplifies enum re-use in various wrappers, e.g. SWIG, generated
- * wrappers, and COM IDL files.
+ * The use of enums simplifies enum re-use in various wrappers, e.g. SWIG,
+ * generated wrappers, and COM IDL files.
  *
- * This file also contains macros to generate additional enums for
- * use in Tidy's language localizations. See detailed information in
- * comments.
+ * This file also contains macros to generate additional enums for use in
+ * Tidy's language localizations and/or to access Tidy's strings via the API.
+ * See detailed information elsewhere in this file's documentation.
  *
- * Enumeration use: LibTidy does *not* guarantee the integer value
- * of any enumeration label, including the starting integer value.
- * Always use enums by label in your code, and never by value.
+ * @note LibTidy does *not* guarantee the value of any enumeration member,
+ * including the starting integer value, except where noted. Always use enum
+ * members rather than their values!
  *
- * Enums that have starting values have starting values for a good
- * reason, mainly to prevent message overlap, because many of these
- * enums are used for string retrieval.
+ * Enums that have starting values have starting values for a good reason,
+ * mainly to prevent string key overlap.
  *
- * (c) 1998-2017 (W3C) MIT, ERCIM, Keio University, HTACG
- * See tidy.h for the full copyright notice.
+ * @author  Dave Raggett [dsr@w3.org]
+ * @author  HTACG, et al (consult git log)
  *
- * Created 2001-05-20 by Charles Reitzel
- * Updated 2002-07-01 by Charles Reitzel - 1st Implementation 
- * Further modifications: consult git log.
- *********************************************************************/
+ * @copyright
+ *     Copyright (c) 1998-2017 World Wide Web Consortium (Massachusetts
+ *     Institute of Technology, European Research Consortium for Informatics
+ *     and Mathematics, Keio University).
+ * @copyright
+ *     See tidy.h for license.
+ *
+ * @date      Created 2001-05-20 by Charles Reitzel
+ * @date      Updated 2002-07-01 by Charles Reitzel
+ * @date      Further modifications: consult git log.
+ ******************************************************************************/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Enumerate configuration options
-*/
+/** @addtogroup internal_api */
+/** @{ */
 
-/** Categories of Tidy configuration options. They are used principally
- ** by the console application to generate documentation, and also have
- ** associated localized strings to describe them.
-*/
+/* MARK: - Code Generation Macros */
+/*********************************************************************
+ * Code Generation Macros
+ *
+ * Tidy aims to provide a consistent API for library users, and so we
+ * go to some lengths to provide a `tidyMessagesCodes` enum that
+ * consists of the message code for every warning/error/info message
+ * tha Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
+ * string representations of each message code.
+ *
+ * We also support the addition of message codes from other modules,
+ * such as from Tidy's accessibility module.
+ *
+ * In order to keep code maintainable and make it simple to add new
+ * messages, the `tidyMessageCodes` and `tidyErrorFilterKeysStruct[]`
+ * are generated dynamically with preprocessor macros defined below.
+ *
+ * Any visible FOREACH_MSG_* macro (including new ones) must be
+ * applied to the `tidyMessageCodes` enum with the MAKE_ENUM() macro
+ * in this file, and to the `tidyErrorFilterKeysStruct[]` with 
+ * MAKE_STRUCT in this file.
+ *
+ * Modern IDE's will dynamically pre-process all of these macros,
+ * enabling code-completion of these enums and array of structs.
+ *********************************************************************/
+
+#define MAKE_ENUM(MESSAGE) MESSAGE,
+#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
+
+/** @} end group internal_api */
+
+
+
+/** @addtogroup public_api */
+/** @{ */
+
+/* MARK: - Public Enumerations */
+/***************************************************************************//**
+ ** @defgroup public_enumerations Public Enumerations
+ **
+ * @remark LibTidy does *not* guarantee the value of any enumeration member,
+ * including the starting integer value, except where noted. Always use enum
+ * members rather than their values!
+ **
+ ** @{
+ ******************************************************************************/
+
+/** @name Configuration Options Enumerations
+ **
+ ** These enumerators are used to define available configuration options and
+ ** thier option categories.
+ **
+ ** @{ */
+
+
+/** Categories of Tidy configuration options, which are used mostly by user
+ ** interfaces to sort Tidy options into related groups.
+ **
+ ** @remark These enum members all have associated localized strings available
+ **         for internal LibTidy use. TODO: add string keys for LibTidy users.
+ **
+ ** @sa     `config.c:option_defs[]` for internal implementation details.
+ */
 typedef enum
 {
-  TidyMarkup = 300,    /**< Markup options: (X)HTML version, etc */
-  TidyDiagnostics,     /**< Diagnostics */
-  TidyPrettyPrint,     /**< Output layout */
-  TidyEncoding,        /**< Character encodings */
-  TidyMiscellaneous,   /**< File handling, message format, etc. */
-  TidyInternalCategory /**< Option is internal only. */
+  TidyMarkup = 300,     /**< Markup options: (X)HTML version, etc */
+  TidyDiagnostics,      /**< Diagnostics */
+  TidyPrettyPrint,      /**< Output layout */
+  TidyEncoding,         /**< Character encodings */
+  TidyMiscellaneous,    /**< File handling, message format, etc. */
+  TidyInternalCategory  /**< Option is internal only. */
 } TidyConfigCategory;
 
 
-/** Option IDs Used to get/set option values.
-
-    These TidyOptionId are used throughout libtidy, and also
-    have associated localized strings to describe them.
- 
-    Ensure struct order is same order as config.c:option_defs structure!
-*/
+/** Option IDs are used used to get and/or set configuration option values.
+ **
+ ** @remark These enum members all have associated localized strings available
+ **         for internal LibTidy use. TODO: add string keys for LibTidy users.
+ **
+ ** @sa     `config.c:option_defs[]` for internal implementation details; that
+ **         array is where you will implement options defined in this enum; and
+ **         it's important to add a string describing the option to
+ **         `language_en.h`, too.
+ */
 typedef enum
 {
-    TidyUnknownOption = 0,   /**< Unknown option! */
+    TidyUnknownOption = 0,       /**< Unknown option! */
     
     TidyAccessibilityCheckLevel, /**< Accessibility check level */
     TidyAltText,                 /**< Default text for alt attribute */
@@ -177,19 +248,27 @@ typedef enum
     N_TIDY_OPTIONS               /**< Must be last */
 } TidyOptionId;
 
-    
-/** Option data types
-*/
+
+/** A Tidy configuration option can have one of these data types. */
 typedef enum
 {
   TidyString,          /**< String */
   TidyInteger,         /**< Integer or enumeration */
-  TidyBoolean          /**< Boolean flag */
+  TidyBoolean          /**< Boolean */
 } TidyOptionType;
 
 
+/** @}
+ ** @name Configuration Options Pick List and Parser Enumerations
+ **
+ ** These enums define enumerated states for the configuration options that
+ ** take values that are not simple yes/no, strings, or simple integers.
+ **
+ ** @{ */
+
 /** AutoBool values used by ParseBool, ParseTriState, ParseIndent, ParseBOM
-*/
+ ** @remark This enum's starting value is guaranteed to remain stable.
+ */
 typedef enum
 {
    TidyNoState,     /**< maps to 'no' */
@@ -197,22 +276,29 @@ typedef enum
    TidyAutoState    /**< Automatic */
 } TidyTriState;
 
-/** Integer values used by ParseUseCustomTags. These are used throughout 
- *  LibTidy to indicate the how Tidy treats custom tags, and also have
- *  associated localized strings to describe them in tidyMessagesMisc in
- *  the form MEMBER_STRING, e.g., TIDYCUSTOMBLOCKLEVEL_STRING
+
+/** Values used by ParseUseCustomTags, which describes how Autonomous Custom
+ ** tags (ACT's) found by Tidy are treated.
+ **
+ ** @remark These enum members all have associated localized strings available
+ **         for internal LibTidy use, and also have public string keys in the
+ **         form MEMBER_STRING, e.g., TIDYCUSTOMBLOCKLEVEL_STRING
+ **
+ ** @remark This enum's starting value is guaranteed to remain stable.
  */
 typedef enum
 {
-    TidyCustomNo,
-    TidyCustomBlocklevel,
-    TidyCustomEmpty,
-    TidyCustomInline,
-    TidyCustomPre
+    TidyCustomNo,           /**< Do not allow autonomous custom tags */
+    TidyCustomBlocklevel,   /**< ACT's treated as blocklevel */
+    TidyCustomEmpty,        /**< ACT's treated as empty tags */
+    TidyCustomInline,       /**< ACT's treated as inline tags */
+    TidyCustomPre           /**< ACT's treated as pre tags */
 } TidyUseCustomTagsState;
-    
-/** TidyNewline option values to control output line endings.
-*/
+
+
+/** TidyNewline option values to control output line endings. 
+ ** @remark This enum's starting value is guaranteed to remain stable.
+ */
 typedef enum
 {
     TidyLF,         /**< Use Unix style: LF */
@@ -222,20 +308,21 @@ typedef enum
 
 
 /** Mode controlling treatment of doctype
-*/
+ ** @remark This enum's starting value is guaranteed to remain stable.
+ */
 typedef enum
 {
     TidyDoctypeHtml5,   /**< <!DOCTYPE html> */
     TidyDoctypeOmit,    /**< Omit DOCTYPE altogether */
     TidyDoctypeAuto,    /**< Keep DOCTYPE in input.  Set version to content */
     TidyDoctypeStrict,  /**< Convert document to HTML 4 strict content model */
-    TidyDoctypeLoose,   /**< Convert document to HTML 4 transitional
-                             content model */
+    TidyDoctypeLoose,   /**< Convert document to HTML 4 transitional content model */
     TidyDoctypeUser     /**< Set DOCTYPE FPI explicitly */
 } TidyDoctypeModes;
 
 /** Mode controlling treatment of duplicate Attributes
-*/
+ ** @remark This enum's starting value is guaranteed to remain stable.
+ */
 typedef enum
 {
     TidyKeepFirst,
@@ -243,7 +330,8 @@ typedef enum
 } TidyDupAttrModes;
 
 /** Mode controlling treatment of sorting attributes
-*/
+ ** @remark This enum's starting value is guaranteed to remain stable.
+ */
 typedef enum
 {
     TidySortAttrNone,
@@ -251,54 +339,13 @@ typedef enum
 } TidyAttrSortStrategy;
 
 
-/* I/O and Message handling interface
-**
-** By default, Tidy will define, create and use instances of input and output
-** handlers for standard C buffered I/O (i.e. FILE* stdin, ** FILE* stdout and
-** FILE* stderr for content input, content output and diagnostic output,
-** respectively.  A FILE* cfgFile input handler will be used for config files.
-** Command line options will just be set directly.
-*/
-
-/** Message severity level. These are used throughout LibTidy to indicate the
- *  severity of a message, and they also have associated localized strings to
- *  describe them.
+/** @} end name
+ ** @name Document Tree
+ ** @{ 
  */
-typedef enum
-{
-    TidyReportLevel_first = 350,
-    TidyInfo = 350,       /**< Report: Information about markup usage */
-    TidyWarning,          /**< Report: Warning message */
-    TidyConfig,           /**< Report: Configuration error */
-    TidyAccess,           /**< Report: Accessibility message */
-    TidyError,            /**< Report: Error message - output suppressed */
-    TidyBadDocument,      /**< Report: I/O or file system error */
-    TidyFatal,            /**< Report: Crash! */
-    TidyDialogueInfo,     /**< Dialogue: Non-document related information */
-    TidyDialogueSummary,  /**< Dialogue: Summary-related information */
-    TidyDialogueDoc,      /**< Dialogue: Document-related information */
-    TidyReportLevel_last
-} TidyReportLevel;
-
-    
-/** Indicates the data type of a format string parameter used when Tidy
-**  emits reports and dialogue as part of the messaging callback functions.
-**  See `messageobj.h` for more information on this API.
-*/
-typedef enum
-{
-    tidyFormatType_INT = 0,
-    tidyFormatType_UINT,
-    tidyFormatType_STRING,
-    tidyFormatType_DOUBLE,
-    tidyFormatType_UNKNOWN  = 20
-} TidyFormatParameterType;
-
-/* Document tree traversal functions
-*/
 
 /** Node types
-*/
+ */
 typedef enum
 {
   TidyNode_Root,        /**< Root */
@@ -319,132 +366,132 @@ typedef enum
 
 
 /** Known HTML element types
-*/
+ */
 typedef enum
 {
-  TidyTag_UNKNOWN,  /**< Unknown tag! */
-  TidyTag_A,        /**< A */
-  TidyTag_ABBR,     /**< ABBR */
-  TidyTag_ACRONYM,  /**< ACRONYM */
-  TidyTag_ADDRESS,  /**< ADDRESS */
-  TidyTag_ALIGN,    /**< ALIGN */
-  TidyTag_APPLET,   /**< APPLET */
-  TidyTag_AREA,     /**< AREA */
-  TidyTag_B,        /**< B */
-  TidyTag_BASE,     /**< BASE */
-  TidyTag_BASEFONT, /**< BASEFONT */
-  TidyTag_BDO,      /**< BDO */
-  TidyTag_BGSOUND,  /**< BGSOUND */
-  TidyTag_BIG,      /**< BIG */
-  TidyTag_BLINK,    /**< BLINK */
-  TidyTag_BLOCKQUOTE,   /**< BLOCKQUOTE */
-  TidyTag_BODY,     /**< BODY */
-  TidyTag_BR,       /**< BR */
-  TidyTag_BUTTON,   /**< BUTTON */
-  TidyTag_CAPTION,  /**< CAPTION */
-  TidyTag_CENTER,   /**< CENTER */
-  TidyTag_CITE,     /**< CITE */
-  TidyTag_CODE,     /**< CODE */
-  TidyTag_COL,      /**< COL */
-  TidyTag_COLGROUP, /**< COLGROUP */
-  TidyTag_COMMENT,  /**< COMMENT */
-  TidyTag_DD,       /**< DD */
-  TidyTag_DEL,      /**< DEL */
-  TidyTag_DFN,      /**< DFN */
-  TidyTag_DIR,      /**< DIR */
-  TidyTag_DIV,      /**< DIF */
-  TidyTag_DL,       /**< DL */
-  TidyTag_DT,       /**< DT */
-  TidyTag_EM,       /**< EM */
-  TidyTag_EMBED,    /**< EMBED */
-  TidyTag_FIELDSET, /**< FIELDSET */
-  TidyTag_FONT,     /**< FONT */
-  TidyTag_FORM,     /**< FORM */
-  TidyTag_FRAME,    /**< FRAME */
-  TidyTag_FRAMESET, /**< FRAMESET */
-  TidyTag_H1,       /**< H1 */
-  TidyTag_H2,       /**< H2 */
-  TidyTag_H3,       /**< H3 */
-  TidyTag_H4,       /**< H4 */
-  TidyTag_H5,       /**< H5 */
-  TidyTag_H6,       /**< H6 */
-  TidyTag_HEAD,     /**< HEAD */
-  TidyTag_HR,       /**< HR */
-  TidyTag_HTML,     /**< HTML */
-  TidyTag_I,        /**< I */
-  TidyTag_IFRAME,   /**< IFRAME */
-  TidyTag_ILAYER,   /**< ILAYER */
-  TidyTag_IMG,      /**< IMG */
-  TidyTag_INPUT,    /**< INPUT */
-  TidyTag_INS,      /**< INS */
-  TidyTag_ISINDEX,  /**< ISINDEX */
-  TidyTag_KBD,      /**< KBD */
-  TidyTag_KEYGEN,   /**< KEYGEN */
-  TidyTag_LABEL,    /**< LABEL */
-  TidyTag_LAYER,    /**< LAYER */
-  TidyTag_LEGEND,   /**< LEGEND */
-  TidyTag_LI,       /**< LI */
-  TidyTag_LINK,     /**< LINK */
-  TidyTag_LISTING,  /**< LISTING */
-  TidyTag_MAP,      /**< MAP */
-  TidyTag_MATHML,   /**< MATH  (HTML5) [i_a]2 MathML embedded in [X]HTML */
-  TidyTag_MARQUEE,  /**< MARQUEE */
-  TidyTag_MENU,     /**< MENU */
-  TidyTag_META,     /**< META */
-  TidyTag_MULTICOL, /**< MULTICOL */
-  TidyTag_NOBR,     /**< NOBR */
-  TidyTag_NOEMBED,  /**< NOEMBED */
-  TidyTag_NOFRAMES, /**< NOFRAMES */
-  TidyTag_NOLAYER,  /**< NOLAYER */
-  TidyTag_NOSAVE,   /**< NOSAVE */
-  TidyTag_NOSCRIPT, /**< NOSCRIPT */
-  TidyTag_OBJECT,   /**< OBJECT */
-  TidyTag_OL,       /**< OL */
-  TidyTag_OPTGROUP, /**< OPTGROUP */
-  TidyTag_OPTION,   /**< OPTION */
-  TidyTag_P,        /**< P */
-  TidyTag_PARAM,    /**< PARAM */
-  TidyTag_PICTURE,  /**< PICTURE (HTML5) */
-  TidyTag_PLAINTEXT,/**< PLAINTEXT */
-  TidyTag_PRE,      /**< PRE */
-  TidyTag_Q,        /**< Q */
-  TidyTag_RB,       /**< RB */
-  TidyTag_RBC,      /**< RBC */
-  TidyTag_RP,       /**< RP */
-  TidyTag_RT,       /**< RT */
-  TidyTag_RTC,      /**< RTC */
-  TidyTag_RUBY,     /**< RUBY */
-  TidyTag_S,        /**< S */
-  TidyTag_SAMP,     /**< SAMP */
-  TidyTag_SCRIPT,   /**< SCRIPT */
-  TidyTag_SELECT,   /**< SELECT */
-  TidyTag_SERVER,   /**< SERVER */
-  TidyTag_SERVLET,  /**< SERVLET */
-  TidyTag_SMALL,    /**< SMALL */
-  TidyTag_SPACER,   /**< SPACER */
-  TidyTag_SPAN,     /**< SPAN */
-  TidyTag_STRIKE,   /**< STRIKE */
-  TidyTag_STRONG,   /**< STRONG */
-  TidyTag_STYLE,    /**< STYLE */
-  TidyTag_SUB,      /**< SUB */
-  TidyTag_SUP,      /**< SUP */
-  TidyTag_SVG,      /**< SVG  (HTML5) */
-  TidyTag_TABLE,    /**< TABLE */
-  TidyTag_TBODY,    /**< TBODY */
-  TidyTag_TD,       /**< TD */
-  TidyTag_TEXTAREA, /**< TEXTAREA */
-  TidyTag_TFOOT,    /**< TFOOT */
-  TidyTag_TH,       /**< TH */
-  TidyTag_THEAD,    /**< THEAD */
-  TidyTag_TITLE,    /**< TITLE */
-  TidyTag_TR,       /**< TR */
-  TidyTag_TT,       /**< TT */
-  TidyTag_U,        /**< U */
-  TidyTag_UL,       /**< UL */
-  TidyTag_VAR,      /**< VAR */
-  TidyTag_WBR,      /**< WBR */
-  TidyTag_XMP,      /**< XMP */
-  TidyTag_NEXTID,   /**< NEXTID */
+  TidyTag_UNKNOWN,       /**< Unknown tag! Must be first */
+  TidyTag_A,             /**< A */
+  TidyTag_ABBR,          /**< ABBR */
+  TidyTag_ACRONYM,       /**< ACRONYM */
+  TidyTag_ADDRESS,       /**< ADDRESS */
+  TidyTag_ALIGN,         /**< ALIGN */
+  TidyTag_APPLET,        /**< APPLET */
+  TidyTag_AREA,          /**< AREA */
+  TidyTag_B,             /**< B */
+  TidyTag_BASE,          /**< BASE */
+  TidyTag_BASEFONT,      /**< BASEFONT */
+  TidyTag_BDO,           /**< BDO */
+  TidyTag_BGSOUND,       /**< BGSOUND */
+  TidyTag_BIG,           /**< BIG */
+  TidyTag_BLINK,         /**< BLINK */
+  TidyTag_BLOCKQUOTE,    /**< BLOCKQUOTE */
+  TidyTag_BODY,          /**< BODY */
+  TidyTag_BR,            /**< BR */
+  TidyTag_BUTTON,        /**< BUTTON */
+  TidyTag_CAPTION,       /**< CAPTION */
+  TidyTag_CENTER,        /**< CENTER */
+  TidyTag_CITE,          /**< CITE */
+  TidyTag_CODE,          /**< CODE */
+  TidyTag_COL,           /**< COL */
+  TidyTag_COLGROUP,      /**< COLGROUP */
+  TidyTag_COMMENT,       /**< COMMENT */
+  TidyTag_DD,            /**< DD */
+  TidyTag_DEL,           /**< DEL */
+  TidyTag_DFN,           /**< DFN */
+  TidyTag_DIR,           /**< DIR */
+  TidyTag_DIV,           /**< DIF */
+  TidyTag_DL,            /**< DL */
+  TidyTag_DT,            /**< DT */
+  TidyTag_EM,            /**< EM */
+  TidyTag_EMBED,         /**< EMBED */
+  TidyTag_FIELDSET,      /**< FIELDSET */
+  TidyTag_FONT,          /**< FONT */
+  TidyTag_FORM,          /**< FORM */
+  TidyTag_FRAME,         /**< FRAME */
+  TidyTag_FRAMESET,      /**< FRAMESET */
+  TidyTag_H1,            /**< H1 */
+  TidyTag_H2,            /**< H2 */
+  TidyTag_H3,            /**< H3 */
+  TidyTag_H4,            /**< H4 */
+  TidyTag_H5,            /**< H5 */
+  TidyTag_H6,            /**< H6 */
+  TidyTag_HEAD,          /**< HEAD */
+  TidyTag_HR,            /**< HR */
+  TidyTag_HTML,          /**< HTML */
+  TidyTag_I,             /**< I */
+  TidyTag_IFRAME,        /**< IFRAME */
+  TidyTag_ILAYER,        /**< ILAYER */
+  TidyTag_IMG,           /**< IMG */
+  TidyTag_INPUT,         /**< INPUT */
+  TidyTag_INS,           /**< INS */
+  TidyTag_ISINDEX,       /**< ISINDEX */
+  TidyTag_KBD,           /**< KBD */
+  TidyTag_KEYGEN,        /**< KEYGEN */
+  TidyTag_LABEL,         /**< LABEL */
+  TidyTag_LAYER,         /**< LAYER */
+  TidyTag_LEGEND,        /**< LEGEND */
+  TidyTag_LI,            /**< LI */
+  TidyTag_LINK,          /**< LINK */
+  TidyTag_LISTING,       /**< LISTING */
+  TidyTag_MAP,           /**< MAP */
+  TidyTag_MATHML,        /**< MATH  (HTML5) [i_a]2 MathML embedded in [X]HTML */
+  TidyTag_MARQUEE,       /**< MARQUEE */
+  TidyTag_MENU,          /**< MENU */
+  TidyTag_META,          /**< META */
+  TidyTag_MULTICOL,      /**< MULTICOL */
+  TidyTag_NOBR,          /**< NOBR */
+  TidyTag_NOEMBED,       /**< NOEMBED */
+  TidyTag_NOFRAMES,      /**< NOFRAMES */
+  TidyTag_NOLAYER,       /**< NOLAYER */
+  TidyTag_NOSAVE,        /**< NOSAVE */
+  TidyTag_NOSCRIPT,      /**< NOSCRIPT */
+  TidyTag_OBJECT,        /**< OBJECT */
+  TidyTag_OL,            /**< OL */
+  TidyTag_OPTGROUP,      /**< OPTGROUP */
+  TidyTag_OPTION,        /**< OPTION */
+  TidyTag_P,             /**< P */
+  TidyTag_PARAM,         /**< PARAM */
+  TidyTag_PICTURE,       /**< PICTURE (HTML5) */
+  TidyTag_PLAINTEXT,     /**< PLAINTEXT */
+  TidyTag_PRE,           /**< PRE */
+  TidyTag_Q,             /**< Q */
+  TidyTag_RB,            /**< RB */
+  TidyTag_RBC,           /**< RBC */
+  TidyTag_RP,            /**< RP */
+  TidyTag_RT,            /**< RT */
+  TidyTag_RTC,           /**< RTC */
+  TidyTag_RUBY,          /**< RUBY */
+  TidyTag_S,             /**< S */
+  TidyTag_SAMP,          /**< SAMP */
+  TidyTag_SCRIPT,        /**< SCRIPT */
+  TidyTag_SELECT,        /**< SELECT */
+  TidyTag_SERVER,        /**< SERVER */
+  TidyTag_SERVLET,       /**< SERVLET */
+  TidyTag_SMALL,         /**< SMALL */
+  TidyTag_SPACER,        /**< SPACER */
+  TidyTag_SPAN,          /**< SPAN */
+  TidyTag_STRIKE,        /**< STRIKE */
+  TidyTag_STRONG,        /**< STRONG */
+  TidyTag_STYLE,         /**< STYLE */
+  TidyTag_SUB,           /**< SUB */
+  TidyTag_SUP,           /**< SUP */
+  TidyTag_SVG,           /**< SVG  (HTML5) */
+  TidyTag_TABLE,         /**< TABLE */
+  TidyTag_TBODY,         /**< TBODY */
+  TidyTag_TD,            /**< TD */
+  TidyTag_TEXTAREA,      /**< TEXTAREA */
+  TidyTag_TFOOT,         /**< TFOOT */
+  TidyTag_TH,            /**< TH */
+  TidyTag_THEAD,         /**< THEAD */
+  TidyTag_TITLE,         /**< TITLE */
+  TidyTag_TR,            /**< TR */
+  TidyTag_TT,            /**< TT */
+  TidyTag_U,             /**< U */
+  TidyTag_UL,            /**< UL */
+  TidyTag_VAR,           /**< VAR */
+  TidyTag_WBR,           /**< WBR */
+  TidyTag_XMP,           /**< XMP */
+  TidyTag_NEXTID,        /**< NEXTID */
 
   TidyTag_ARTICLE,
   TidyTag_ASIDE,
@@ -475,14 +522,12 @@ typedef enum
   TidyTag_TRACK,
   TidyTag_VIDEO,
 
-  N_TIDY_TAGS       /**< Must be last */
+  N_TIDY_TAGS            /**< Must be last */
 } TidyTagId;
 
-/* Attribute interrogation
-*/
 
 /** Known HTML attributes
-*/
+ */
 typedef enum
 {
   TidyAttr_UNKNOWN,           /**< UNKNOWN= */
@@ -804,56 +849,82 @@ typedef enum
   TidyAttr_BASEPROFILE,         /**< BASEPROFILE= */
   TidyAttr_CONTENTSCRIPTTYPE,   /**< CONTENTSCRIPTTYPE= */
   TidyAttr_CONTENTSTYLETYPE,    /**< CONTENTSTYLETYPE= */
+
   /* MathML <math> attributes */
   TidyAttr_DISPLAY,             /**< DISPLAY= (html5) */
 
   /* RDFa global attributes */
-  TidyAttr_ABOUT,             /**< ABOUT= */
-  TidyAttr_DATATYPE,          /**< DATATYPE= */
-  TidyAttr_INLIST,            /**< INLIST= */
-  TidyAttr_PREFIX,            /**< PREFIX= */
-  TidyAttr_PROPERTY,          /**< PROPERTY= */
-  TidyAttr_RESOURCE,          /**< RESOURCE= */
-  TidyAttr_TYPEOF,            /**< TYPEOF= */
-  TidyAttr_VOCAB,             /**< VOCAB= */
+  TidyAttr_ABOUT,               /**< ABOUT= */
+  TidyAttr_DATATYPE,            /**< DATATYPE= */
+  TidyAttr_INLIST,              /**< INLIST= */
+  TidyAttr_PREFIX,              /**< PREFIX= */
+  TidyAttr_PROPERTY,            /**< PROPERTY= */
+  TidyAttr_RESOURCE,            /**< RESOURCE= */
+  TidyAttr_TYPEOF,              /**< TYPEOF= */
+  TidyAttr_VOCAB,               /**< VOCAB= */
 
-  TidyAttr_INTEGRITY,         /**< INTEGRITY= */
+  TidyAttr_INTEGRITY,           /**< INTEGRITY= */
 
-  TidyAttr_AS,               /**< AS= */
+  TidyAttr_AS,                  /**< AS= */
 
-  TidyAttr_XMLNSXLINK,        /**< svg xmls:xlink="url" */
+  TidyAttr_XMLNSXLINK,          /**< svg xmls:xlink="url" */
 
-  N_TIDY_ATTRIBS              /**< Must be last */
+  N_TIDY_ATTRIBS                /**< Must be last */
 } TidyAttrId;
 
     
-/*********************************************************************
- * Code Generation
- *
- * Tidy aims to provide a consistent API for library users, and so we
- * go to some lengths to provide a `tidyMessagesCodes` enum that
- * consists of the message code for every warning/error/info message
- * tha Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
- * string representations of each message code.
- *
- * We also support the addition of message codes from other modules,
- * such as from Tidy's accessibility module.
- *
- * In order to keep code maintainable and make it simple to add new
- * messages, the `tidyMessageCodes` and `tidyErrorFilterKeysStruct[]`
- * are generated dynamically with preprocessor macros defined below.
- *
- * Any visible FOREACH_MSG_* macro (including new ones) must be
- * applied to the `tidyMessageCodes` enum with the MAKE_ENUM() macro
- * in this file, and to the `tidyErrorFilterKeysStruct[]` with 
- * MAKE_STRUCT in this file.
- *
- * Modern IDE's will dynamically pre-process all of these macros,
- * enabling code-completion of these enums and array of structs.
- *********************************************************************/
+/** @}
+ ** @name I/O and Message Handling Interface
+ **
+ ** Messages used throughout LibTidy and exposed to the public API have
+ ** attributes which are communicated with these enumerations.
+ **
+ ** @{
+ */
 
-#define MAKE_ENUM(MESSAGE) MESSAGE,
-#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
+
+/** Message severity level, used throughout LibTidy to indicate the severity
+ ** or status of a message
+ **
+ ** @remark These enum members all have associated localized strings available
+ **         for internal LibTidy use, and also have public string keys.
+ */
+typedef enum
+{
+    TidyReportLevel_first = 350,
+    TidyInfo = 350,       /**< Report: Information about markup usage */
+    TidyWarning,          /**< Report: Warning message */
+    TidyConfig,           /**< Report: Configuration error */
+    TidyAccess,           /**< Report: Accessibility message */
+    TidyError,            /**< Report: Error message - output suppressed */
+    TidyBadDocument,      /**< Report: I/O or file system error */
+    TidyFatal,            /**< Report: Crash! */
+    TidyDialogueInfo,     /**< Dialogue: Non-document related information */
+    TidyDialogueSummary,  /**< Dialogue: Summary-related information */
+    TidyDialogueDoc,      /**< Dialogue: Document-related information */
+    TidyReportLevel_last
+} TidyReportLevel;
+
+    
+/** Indicates the data type of a format string parameter used when Tidy
+ ** emits reports and dialogue as part of the messaging callback functions.
+ ** See `messageobj.h` for more information on this API.
+ */
+typedef enum
+{
+    tidyFormatType_INT = 0,
+    tidyFormatType_UINT,
+    tidyFormatType_STRING,
+    tidyFormatType_DOUBLE,
+    tidyFormatType_UNKNOWN  = 20
+} TidyFormatParameterType;
+
+
+/** @}
+ ** @name Messages and Localization
+ ** @{ 
+ */
+
 
 /*********************************************************************
  * These `tidyMessageCodes` are used throughout libtidy, and also have
@@ -863,6 +934,8 @@ typedef enum
  * output by Tidy in its report table and via the message filter
  * callback.
  *********************************************************************/
+
+/** @cond DOXYGEN_SHOULD_SKIP_THIS */
 
 /* message codes for entities/numeric character references */
 #define FOREACH_MSG_ENTITIES(FN)    \
@@ -1126,12 +1199,10 @@ typedef enum
 /* [13.10.1.1] */   FN(SKIPOVER_ASCII_ART)
 
 
-/** @} */
-/** @name Data Structures */
-/** @{ */
+/** @endcond */
 
 
-/*********************************************************************
+/*********************************************************************//**
  * `tidyMessageCodes`
  *
  * The actual definition of the enumeration, generated dynamically
@@ -1209,6 +1280,7 @@ typedef enum
 /* Explanatory text. */                              FN(TEXT_VENDOR_CHARS)          \
 /* Explanatory text. */                              FN(TEXT_WINDOWS_CHARS)
 
+/** This is tidyMessagesMisc */
 typedef enum
 {
     /* This MUST be present and first. */
@@ -1230,87 +1302,89 @@ typedef enum
  * Tidy console application. It it possible to build LibTidy without
  * these strings.
  *********************************************************************/
-#define FOREACH_MSG_CONSOLE(FN)                                                        \
-FN(TC_LABEL_COL)                    \
-FN(TC_LABEL_FILE)                   \
-FN(TC_LABEL_LANG)                   \
-FN(TC_LABEL_LEVL)                   \
-FN(TC_LABEL_OPT)                    \
-FN(TC_MAIN_ERROR_LOAD_CONFIG)       \
-FN(TC_OPT_ACCESS)                   \
-FN(TC_OPT_ASCII)                    \
-FN(TC_OPT_ASHTML)                   \
-FN(TC_OPT_ASXML)                    \
-FN(TC_OPT_BARE)                     \
-FN(TC_OPT_BIG5)                     \
-FN(TC_OPT_CLEAN)                    \
-FN(TC_OPT_CONFIG)                   \
-FN(TC_OPT_ERRORS)                   \
-FN(TC_OPT_FILE)                     \
-FN(TC_OPT_GDOC)                     \
-FN(TC_OPT_HELP)                     \
-FN(TC_OPT_HELPCFG)                  \
-FN(TC_OPT_HELPOPT)                  \
-FN(TC_OPT_IBM858)                   \
-FN(TC_OPT_INDENT)                   \
-FN(TC_OPT_ISO2022)                  \
-FN(TC_OPT_LANGUAGE)                 \
-FN(TC_OPT_LATIN0)                   \
-FN(TC_OPT_LATIN1)                   \
-FN(TC_OPT_MAC)                      \
-FN(TC_OPT_MODIFY)                   \
-FN(TC_OPT_NUMERIC)                  \
-FN(TC_OPT_OMIT)                     \
-FN(TC_OPT_OUTPUT)                   \
-FN(TC_OPT_QUIET)                    \
-FN(TC_OPT_RAW)                      \
-FN(TC_OPT_SHIFTJIS)                 \
-FN(TC_OPT_SHOWCFG)                  \
-FN(TC_OPT_UPPER)                    \
-FN(TC_OPT_UTF16)                    \
-FN(TC_OPT_UTF16BE)                  \
-FN(TC_OPT_UTF16LE)                  \
-FN(TC_OPT_UTF8)                     \
-FN(TC_OPT_VERSION)                  \
-FN(TC_OPT_WIN1252)                  \
-FN(TC_OPT_WRAP)                     \
-FN(TC_OPT_XML)                      \
-FN(TC_OPT_XMLCFG)                   \
-FN(TC_OPT_XMLSTRG)                  \
-FN(TC_OPT_XMLERRS)                  \
-FN(TC_OPT_XMLOPTS)                  \
-FN(TC_OPT_XMLHELP)                  \
-FN(TC_STRING_CONF_HEADER)           \
-FN(TC_STRING_CONF_NAME)             \
-FN(TC_STRING_CONF_TYPE)             \
-FN(TC_STRING_CONF_VALUE)            \
-FN(TC_STRING_CONF_NOTE)             \
-FN(TC_STRING_OPT_NOT_DOCUMENTED)    \
-FN(TC_STRING_OUT_OF_MEMORY)         \
-FN(TC_STRING_FATAL_ERROR)           \
-FN(TC_STRING_FILE_MANIP)            \
-FN(TC_STRING_LANG_MUST_SPECIFY)     \
-FN(TC_STRING_LANG_NOT_FOUND)        \
-FN(TC_STRING_MUST_SPECIFY)          \
-FN(TC_STRING_PROCESS_DIRECTIVES)    \
-FN(TC_STRING_CHAR_ENCODING)         \
-FN(TC_STRING_MISC)                  \
-FN(TC_STRING_XML)                   \
-FN(TC_STRING_UNKNOWN_OPTION)        \
-FN(TC_STRING_UNKNOWN_OPTION_B)      \
-FN(TC_STRING_VERS_A)                \
-FN(TC_STRING_VERS_B)                \
-FN(TC_TXT_HELP_1)                   \
-FN(TC_TXT_HELP_2A)                  \
-FN(TC_TXT_HELP_2B)                  \
-FN(TC_TXT_HELP_3)                   \
-FN(TC_TXT_HELP_CONFIG)              \
-FN(TC_TXT_HELP_CONFIG_NAME)         \
-FN(TC_TXT_HELP_CONFIG_TYPE)         \
-FN(TC_TXT_HELP_CONFIG_ALLW)         \
-FN(TC_TXT_HELP_LANG_1)              \
-FN(TC_TXT_HELP_LANG_2)              \
-FN(TC_TXT_HELP_LANG_3)
+/** @cond DOXYGEN_SHOULD_SKIP_THIS */
+#define FOREACH_MSG_CONSOLE(FN)             \
+        FN(TC_LABEL_COL)                    \
+        FN(TC_LABEL_FILE)                   \
+        FN(TC_LABEL_LANG)                   \
+        FN(TC_LABEL_LEVL)                   \
+        FN(TC_LABEL_OPT)                    \
+        FN(TC_MAIN_ERROR_LOAD_CONFIG)       \
+        FN(TC_OPT_ACCESS)                   \
+        FN(TC_OPT_ASCII)                    \
+        FN(TC_OPT_ASHTML)                   \
+        FN(TC_OPT_ASXML)                    \
+        FN(TC_OPT_BARE)                     \
+        FN(TC_OPT_BIG5)                     \
+        FN(TC_OPT_CLEAN)                    \
+        FN(TC_OPT_CONFIG)                   \
+        FN(TC_OPT_ERRORS)                   \
+        FN(TC_OPT_FILE)                     \
+        FN(TC_OPT_GDOC)                     \
+        FN(TC_OPT_HELP)                     \
+        FN(TC_OPT_HELPCFG)                  \
+        FN(TC_OPT_HELPOPT)                  \
+        FN(TC_OPT_IBM858)                   \
+        FN(TC_OPT_INDENT)                   \
+        FN(TC_OPT_ISO2022)                  \
+        FN(TC_OPT_LANGUAGE)                 \
+        FN(TC_OPT_LATIN0)                   \
+        FN(TC_OPT_LATIN1)                   \
+        FN(TC_OPT_MAC)                      \
+        FN(TC_OPT_MODIFY)                   \
+        FN(TC_OPT_NUMERIC)                  \
+        FN(TC_OPT_OMIT)                     \
+        FN(TC_OPT_OUTPUT)                   \
+        FN(TC_OPT_QUIET)                    \
+        FN(TC_OPT_RAW)                      \
+        FN(TC_OPT_SHIFTJIS)                 \
+        FN(TC_OPT_SHOWCFG)                  \
+        FN(TC_OPT_UPPER)                    \
+        FN(TC_OPT_UTF16)                    \
+        FN(TC_OPT_UTF16BE)                  \
+        FN(TC_OPT_UTF16LE)                  \
+        FN(TC_OPT_UTF8)                     \
+        FN(TC_OPT_VERSION)                  \
+        FN(TC_OPT_WIN1252)                  \
+        FN(TC_OPT_WRAP)                     \
+        FN(TC_OPT_XML)                      \
+        FN(TC_OPT_XMLCFG)                   \
+        FN(TC_OPT_XMLSTRG)                  \
+        FN(TC_OPT_XMLERRS)                  \
+        FN(TC_OPT_XMLOPTS)                  \
+        FN(TC_OPT_XMLHELP)                  \
+        FN(TC_STRING_CONF_HEADER)           \
+        FN(TC_STRING_CONF_NAME)             \
+        FN(TC_STRING_CONF_TYPE)             \
+        FN(TC_STRING_CONF_VALUE)            \
+        FN(TC_STRING_CONF_NOTE)             \
+        FN(TC_STRING_OPT_NOT_DOCUMENTED)    \
+        FN(TC_STRING_OUT_OF_MEMORY)         \
+        FN(TC_STRING_FATAL_ERROR)           \
+        FN(TC_STRING_FILE_MANIP)            \
+        FN(TC_STRING_LANG_MUST_SPECIFY)     \
+        FN(TC_STRING_LANG_NOT_FOUND)        \
+        FN(TC_STRING_MUST_SPECIFY)          \
+        FN(TC_STRING_PROCESS_DIRECTIVES)    \
+        FN(TC_STRING_CHAR_ENCODING)         \
+        FN(TC_STRING_MISC)                  \
+        FN(TC_STRING_XML)                   \
+        FN(TC_STRING_UNKNOWN_OPTION)        \
+        FN(TC_STRING_UNKNOWN_OPTION_B)      \
+        FN(TC_STRING_VERS_A)                \
+        FN(TC_STRING_VERS_B)                \
+        FN(TC_TXT_HELP_1)                   \
+        FN(TC_TXT_HELP_2A)                  \
+        FN(TC_TXT_HELP_2B)                  \
+        FN(TC_TXT_HELP_3)                   \
+        FN(TC_TXT_HELP_CONFIG)              \
+        FN(TC_TXT_HELP_CONFIG_NAME)         \
+        FN(TC_TXT_HELP_CONFIG_TYPE)         \
+        FN(TC_TXT_HELP_CONFIG_ALLW)         \
+        FN(TC_TXT_HELP_LANG_1)              \
+        FN(TC_TXT_HELP_LANG_2)              \
+        FN(TC_TXT_HELP_LANG_3)
+/** @endcond */
 
 typedef enum
 {
@@ -1325,10 +1399,11 @@ typedef enum
 
 #endif /* SUPPORT_CONSOLE_APP */
 
+/** @} end name */
 
-/** @} */
+/** @} end group public_enumerations */
 
-
+/** @} end group public_api */
 
 #ifdef __cplusplus
 }  /* extern "C" */

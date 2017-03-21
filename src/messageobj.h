@@ -2,7 +2,7 @@
 #define messageobj_h
 
 /**************************************************************************//**
- * @file messageobj.h
+ * @file
  * Provides an external, extensible API for message reporting.
  *
  * This module implements the `_TidyMessageImpl` structure (declared in
