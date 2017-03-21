@@ -40,6 +40,33 @@
 extern "C" {
 #endif
 
+/***************************************************************************//**
+ ** @defgroup public_enum_gen Code Generation Macros
+ ** @ingroup internal_api
+ **
+ ** Tidy aims to provide a consistent API for library users, and so we
+ ** go to some lengths to provide a `tidyMessagesCodes` enum that
+ ** consists of the message code for every warning/error/info message
+ ** that Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
+ ** string representations of each message code.
+ **
+ ** We also support the addition of message codes from other modules,
+ ** such as from Tidy's accessibility module.
+ **
+ ** In order to keep code maintainable and make it simple to add new
+ ** messages, the message code enums and `tidyErrorFilterKeysStruct[]`
+ ** are generated dynamically with preprocessor macros defined below.
+ **
+ ** Any visible FOREACH_MSG_* macro (including new ones) must be
+ ** applied to the `tidyStrings` enum with the MAKE_ENUM() macro
+ ** in this file, and to the `tidyErrorFilterKeysStruct[]` with
+ ** MAKE_STRUCT in this file.
+ **
+ ** Modern IDE's will dynamically pre-process all of these macros,
+ ** enabling code-completion of these enums and array of structs.
+ ******************************************************************************/
+
+
 /* MARK: - Public Enumerations */
 /***************************************************************************//**
  ** @defgroup public_enumerations Public Enumerations
@@ -79,7 +106,8 @@ typedef enum
 } TidyConfigCategory;
 
 
-/** Option IDs are used used to get and/or set configuration option values.
+/** Option IDs are used used to get and/or set configuration option values and
+ **        retrieve their descriptions.
  **
  ** @remark These enum members all have associated localized strings available
  **         for internal LibTidy use, which describe the purpose of the option.
@@ -876,71 +904,58 @@ typedef enum
  */
 typedef enum
 {
-    tidyFormatType_INT = 0,
-    tidyFormatType_UINT,
-    tidyFormatType_STRING,
-    tidyFormatType_DOUBLE,
-    tidyFormatType_UNKNOWN  = 20
+    tidyFormatType_INT = 0,         /**< Argument is signed integer. */
+    tidyFormatType_UINT,            /**< Argument is unsigned integer. */
+    tidyFormatType_STRING,          /**< Argument is a string. */
+    tidyFormatType_DOUBLE,          /**< Argument is a double. */
+    tidyFormatType_UNKNOWN  = 20    /**< Argument type is unknown! */
 } TidyFormatParameterType;
 
 
 /** @} */
 /** @} end group public_enumerations*/
-
-    
-/** @addtogroup internal_api */
+/** @addtogroup public_enum_gen */
 /** @{ */
 
 /* MARK: - Code Generation Macros */
-/*********************************************************************
- * Code Generation Macros
- *
- * Tidy aims to provide a consistent API for library users, and so we
- * go to some lengths to provide a `tidyMessagesCodes` enum that
- * consists of the message code for every warning/error/info message
- * tha Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
- * string representations of each message code.
- *
- * We also support the addition of message codes from other modules,
- * such as from Tidy's accessibility module.
- *
- * In order to keep code maintainable and make it simple to add new
- * messages, the `tidyMessageCodes` and `tidyErrorFilterKeysStruct[]`
- * are generated dynamically with preprocessor macros defined below.
- *
- * Any visible FOREACH_MSG_* macro (including new ones) must be
- * applied to the `tidyMessageCodes` enum with the MAKE_ENUM() macro
- * in this file, and to the `tidyErrorFilterKeysStruct[]` with 
- * MAKE_STRUCT in this file.
- *
- * Modern IDE's will dynamically pre-process all of these macros,
- * enabling code-completion of these enums and array of structs.
- *********************************************************************/
+/** @name Code Generation Macros
+ ** These macros generate the enums and arrays from the Content Generation
+ ** Macros defined below.
+ ** @{
+ */
 
+/** Used to populate the contents of an enumerator, such as tidyStrings.
+ */
 #define MAKE_ENUM(MESSAGE) MESSAGE,
+
+/** Used to populate the contents of a structure, such as 
+ ** tidyErrorFilterKeysStruct[]. 
+ */
 #define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
 
 
+/** @} */
 
-/*********************************************************************
- * These `tidyMessageCodes` are used throughout libtidy, and also have
- * associated localized strings to describe them.
- *
- * These message codes comprise every possible message that can be
- * output by Tidy in its report table and via the message filter
- * callback.
- *********************************************************************/
 
-/* message codes for entities/numeric character references */
-#define FOREACH_MSG_ENTITIES(FN)    \
+/* MARK: - Content Generation Macros */
+/** @name Content Generation Macros
+ ** These macros generate the individual entries in the enums and structs used
+ ** to manage strings in Tidy.
+ ** @{
+ */
+
+
+/** Report codes for entities/numeric character references. */
+#define FOREACH_MSG_ENTITIES(FN) \
         FN(APOS_UNDEFINED)          \
         FN(MISSING_SEMICOLON_NCR)   \
         FN(MISSING_SEMICOLON)       \
         FN(UNESCAPED_AMPERSAND)     \
         FN(UNKNOWN_ENTITY)
 
-/* error codes for element messages */
-#define FOREACH_MSG_ELEMENT(FN)           \
+
+/** Report codes for element messages. */
+#define FOREACH_MSG_ELEMENT(FN) \
         FN(BAD_CDATA_CONTENT)             \
         FN(BAD_COMMENT_CHARS)             \
         FN(BAD_XML_COMMENT)               \
@@ -992,8 +1007,9 @@ typedef enum
         FN(UNKNOWN_ELEMENT_LOOKS_CUSTOM)  \
         FN(USING_BR_INPLACE_OF)
 
-/* error codes used for attribute messages */
-#define FOREACH_MSG_ATTRIBUTE(FN)          \
+
+/** Report codes used for attribute messages. */
+#define FOREACH_MSG_ATTRIBUTE(FN) \
         FN(ANCHOR_NOT_UNIQUE)              \
         FN(ATTR_VALUE_NOT_LCASE)           \
         FN(BACKSLASH_IN_URI)               \
@@ -1031,8 +1047,9 @@ typedef enum
         FN(XML_ATTRIBUTE_VALUE)            \
         FN(XML_ID_SYNTAX)
 
-/* character encoding errors */
-#define FOREACH_MSG_ENCODING(FN)    \
+
+/** Report codes for character encoding errors. */
+#define FOREACH_MSG_ENCODING(FN) \
         FN(BAD_SURROGATE_LEAD)      \
         FN(BAD_SURROGATE_PAIR)      \
         FN(BAD_SURROGATE_TAIL)      \
@@ -1044,8 +1061,9 @@ typedef enum
         FN(INVALID_UTF16)           \
         FN(VENDOR_SPECIFIC_CHARS)
 
-/* miscellaneous config and info messages */
-#define FOREACH_MSG_OTHER(FN)  \
+
+/** Miscellaneous config and information messages. */
+#define FOREACH_MSG_OTHER(FN) \
         FN(STRING_CONTENT_LOOKS)      /* `Document content looks like %s`. */                   \
         FN(STRING_DOCTYPE_GIVEN)      /* `Doctype given is \"%s\". */                           \
         FN(STRING_HTML_PROPRIETARY)   /* `HTML Proprietary`/ */                                 \
@@ -1058,8 +1076,9 @@ typedef enum
         FN(TIDYCUSTOMINLINE_STRING)          \
         FN(TIDYCUSTOMPRE_STRING)             \
 
-/* accessibility module contributions */
-#define FOREACH_MSG_ACCESS(FN)                                          \
+
+/** Report codes from the accessibility module. */
+#define FOREACH_MSG_ACCESS(FN) \
 /* [1.1.1.1] */     FN(IMG_MISSING_ALT)                                 \
 /* [1.1.1.2] */     FN(IMG_ALT_SUSPICIOUS_FILENAME)                     \
 /* [1.1.1.3] */     FN(IMG_ALT_SUSPICIOUS_FILE_SIZE)                    \
@@ -1193,20 +1212,14 @@ typedef enum
 /* [13.10.1.1] */   FN(SKIPOVER_ASCII_ART)
 
 
-/*********************************************************************
- * These `tidyMessagesMisc` are used throughout libtidy, and also have
- * associated localized strings to describe them.
- *
- * These message codes comprise every possible message that can be
- * output by Tidy that are *not* diagnostic style messages available
- * in the message filter callback, and are *not* console application
- * specific messages.
- *********************************************************************/
-
-#define FOREACH_MSG_MISC(FN)                                                        \
-/* Point to Accessibility Guidelines. */             FN(ACCESS_URL)                 \
-/* Point to Tidy accessibility page. */              FN(ATRC_ACCESS_URL)            \
-/* File can't be opened. */                          FN(FILE_CANT_OPEN)             \
+/** These message codes comprise every possible message that can be output by
+ ** Tidy that are *not* diagnostic style messages, and are *not* console
+ ** application specific messages.
+ */
+#define FOREACH_MSG_MISC(FN) \
+/** Point to Accessibility Guidelines. */             FN(ACCESS_URL)                 \
+/** Point to Tidy accessibility page. */              FN(ATRC_ACCESS_URL)            \
+/** File can't be opened. */                          FN(FILE_CANT_OPEN)             \
 /* Localized `line %d column %d` text. */            FN(LINE_COLUMN_STRING)         \
 /* For `discarding`. */                              FN(STRING_DISCARDING)          \
 /* `%u %s, %u %s were found!`. */                    FN(STRING_ERROR_COUNT)         \
@@ -1245,16 +1258,11 @@ typedef enum
 /* Explanatory text. */                              FN(TEXT_WINDOWS_CHARS)
 
 
-/*********************************************************************
- * These `tidyConsoleMessages` are used throughout libtidy, and also
- * have associated localized strings to describe them.
- *
- * These message codes comprise every message is exclusive to the
- * Tidy console application. It it possible to build LibTidy without
- * these strings.
- *********************************************************************/
+/** These message codes comprise every message is exclusive to theTidy console
+ ** application. It it possible to build LibTidy without these strings.
+ */
 #if SUPPORT_CONSOLE_APP
-#define FOREACH_MSG_CONSOLE(FN)             \
+#define FOREACH_MSG_CONSOLE(FN) \
         FN(TC_LABEL_COL)                    \
         FN(TC_LABEL_FILE)                   \
         FN(TC_LABEL_LANG)                   \
@@ -1336,7 +1344,8 @@ typedef enum
         FN(TC_TXT_HELP_LANG_2)              \
         FN(TC_TXT_HELP_LANG_3)
 #endif /* SUPPORT_CONSOLE_APP */
-    
+
+/** @} */
 /** @} end group internal_api */
     
     
@@ -1347,16 +1356,16 @@ typedef enum
 /** @name Messages 
  ** @{ */
 
-/*********************************************************************//**
- * `tidyMessageCodes`
- *
- * The actual definition of the enumeration, generated dynamically
- * per the notes above.
- *********************************************************************/
+/** The enumeration contains a list of every possible string that Tidy and the
+ ** console application can output. They are used as keys internally within
+ ** Tidy, and have corresponding text keys that are used in message callback
+ ** filters (these are defined in `tidyErrorFilterKeysStruct[]`, but API users
+ ** don't require access to it directly).
+ */
 typedef enum
 {
     /* This MUST be present and first. */
-    tidyMessageCodes_first = 500,
+    tidyStrings_first = 500,
     
     FOREACH_MSG_ENTITIES(MAKE_ENUM)
     FOREACH_MSG_ELEMENT(MAKE_ENUM)
@@ -1368,41 +1377,19 @@ typedef enum
     /* Defined in `access.h` */
     FOREACH_MSG_ACCESS(MAKE_ENUM)
 #endif
-    
-    /* This MUST be present and last. */
-    tidyMessageCodes_last
-} tidyMessageCodes;
 
-
-
-/** This is tidyMessagesMisc */
-typedef enum
-{
-    /* This MUST be present and first. */
-    tidyMessagesMisc_first = tidyMessageCodes_last,
-    
     FOREACH_MSG_MISC(MAKE_ENUM)
 
-    /* This MUST be present and last. */
-    tidyMessagesMisc_last
-} tidyMessagesMisc;
-
-
 #if SUPPORT_CONSOLE_APP
-
-typedef enum
-{
-    /* This MUST be present and first. */
-    tidyConsoleMessages_first = tidyMessagesMisc_last,
-
     FOREACH_MSG_CONSOLE(MAKE_ENUM)
+#endif
 
     /* This MUST be present and last. */
-    tidyConsoleMessages_last
-} tidyConsoleMessages;
+    tidyStrings_last
 
-#endif /* SUPPORT_CONSOLE_APP */
-    
+} tidyStrings;
+
+
 /** @} */
 /** @} end group public_enumerations */
 

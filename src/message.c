@@ -943,7 +943,7 @@ typedef struct tidyErrorFilterKeyItem {
 } tidyErrorFilterKeyItem;
 
 static const tidyErrorFilterKeyItem tidyErrorFilterKeysStruct[] = {
-    { "tidyMessageCodes_first",                        tidyMessageCodes_first },
+    { "tidyStrings_first",                        tidyStrings_first },
     FOREACH_MSG_ENTITIES(MAKE_STRUCT)
     FOREACH_MSG_ELEMENT(MAKE_STRUCT)
     FOREACH_MSG_ATTRIBUTE(MAKE_STRUCT)
@@ -957,7 +957,7 @@ static const tidyErrorFilterKeyItem tidyErrorFilterKeysStruct[] = {
     FOREACH_MSG_MISC(MAKE_STRUCT)
     FOREACH_MSG_CONSOLE(MAKE_STRUCT)
 
-    { "tidyMessageCodes_last",                         tidyMessageCodes_last  },
+    { "tidyStrings_last",                         tidyStrings_last  },
     { NULL,                                            0                      },
 };
 
