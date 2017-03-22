@@ -937,13 +937,14 @@ void TY_(ReportNumWarnings)( TidyDocImpl* doc )
  * For macro documentation, refer to the comments in `tidyenum.h`.
  *********************************************************************/
 
-typedef struct tidyErrorFilterKeyItem {
+typedef struct tidyStringsKeyItem {
     ctmbstr key;
     int value;
-} tidyErrorFilterKeyItem;
+} tidyStringsKeyItem;
 
-static const tidyErrorFilterKeyItem tidyErrorFilterKeysStruct[] = {
-    { "tidyStrings_first",                        tidyStrings_first },
+static const tidyStringsKeyItem tidyStringsKeys[] = {
+    FOREACH_TIDYCONFIGCATEGORY(MAKE_STRUCT)
+    { "TIDYSTRINGS_FIRST",                        TIDYSTRINGS_FIRST },
     FOREACH_MSG_ENTITIES(MAKE_STRUCT)
     FOREACH_MSG_ELEMENT(MAKE_STRUCT)
     FOREACH_MSG_ATTRIBUTE(MAKE_STRUCT)
@@ -951,14 +952,17 @@ static const tidyErrorFilterKeyItem tidyErrorFilterKeysStruct[] = {
     FOREACH_MSG_OTHER(MAKE_STRUCT)
     
 #if SUPPORT_ACCESSIBILITY_CHECKS
-    FOREACH_MSG_ACCESS(MAKE_STRUCT) /* Defined in `access.h` */
+    FOREACH_MSG_ACCESS(MAKE_STRUCT)
 #endif
 
     FOREACH_MSG_MISC(MAKE_STRUCT)
-    FOREACH_MSG_CONSOLE(MAKE_STRUCT)
 
-    { "tidyStrings_last",                         tidyStrings_last  },
-    { NULL,                                            0                      },
+#if SUPPORT_CONSOLE_APP
+    FOREACH_MSG_CONSOLE(MAKE_STRUCT)
+#endif
+
+    { "TIDYSTRINGS_LAST",                         TIDYSTRINGS_LAST  },
+    { NULL,                                       0                 },
 };
 
 
@@ -968,9 +972,9 @@ static const tidyErrorFilterKeyItem tidyErrorFilterKeysStruct[] = {
 ctmbstr TY_(tidyErrorCodeAsKey)(uint code)
 {
     uint i = 0;
-    while (tidyErrorFilterKeysStruct[i].key) {
-        if ( tidyErrorFilterKeysStruct[i].value == code )
-            return tidyErrorFilterKeysStruct[i].key;
+    while (tidyStringsKeys[i].key) {
+        if ( tidyStringsKeys[i].value == code )
+            return tidyStringsKeys[i].key;
         i++;
     }
     return "UNDEFINED";
@@ -983,9 +987,9 @@ ctmbstr TY_(tidyErrorCodeAsKey)(uint code)
 uint TY_(tidyErrorCodeFromKey)(ctmbstr code)
 {
     uint i = 0;
-    while (tidyErrorFilterKeysStruct[i].key) {
-        if ( strcmp(tidyErrorFilterKeysStruct[i].key, code) == 0 )
-            return tidyErrorFilterKeysStruct[i].value;
+    while (tidyStringsKeys[i].key) {
+        if ( strcmp(tidyStringsKeys[i].key, code) == 0 )
+            return tidyStringsKeys[i].value;
         i++;
     }
     return UINT_MAX;
@@ -1001,7 +1005,7 @@ static const uint tidyErrorCodeListSize()
     
     if ( array_size == 0 )
     {
-        while ( tidyErrorFilterKeysStruct[array_size].key ) {
+        while ( tidyStringsKeys[array_size].key ) {
             array_size++;
         }
     }
@@ -1024,7 +1028,7 @@ TidyIterator TY_(getErrorCodeList)()
  */
 uint TY_(getNextErrorCode)( TidyIterator* iter )
 {
-    const tidyErrorFilterKeyItem *item = NULL;
+    const tidyStringsKeyItem *item = NULL;
     size_t itemIndex;
     assert( iter != NULL );
     
@@ -1032,7 +1036,7 @@ uint TY_(getNextErrorCode)( TidyIterator* iter )
     
     if ( itemIndex > 0 && itemIndex <= tidyErrorCodeListSize() )
     {
-        item = &tidyErrorFilterKeysStruct[itemIndex - 1];
+        item = &tidyStringsKeys[itemIndex - 1];
         itemIndex++;
     }
     

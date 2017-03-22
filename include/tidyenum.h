@@ -41,30 +41,463 @@ extern "C" {
 #endif
 
 /***************************************************************************//**
- ** @defgroup public_enum_gen Code Generation Macros
+ ** @defgroup public_enum_gen Tidy Strings Generation Macros
  ** @ingroup internal_api
  **
- ** Tidy aims to provide a consistent API for library users, and so we
- ** go to some lengths to provide a `tidyMessagesCodes` enum that
- ** consists of the message code for every warning/error/info message
- ** that Tidy can emit, and a `tidyErrorFilterKeysStruct[]` array with
- ** string representations of each message code.
+ ** Tidy aims to provide a consistent API for library users, and so we go to
+ ** some lengths to provide a `tidyStrings` enum that consists of the message
+ ** code for every string that Tidy can emit (used internally), and the array
+ ** `tidyStringsKeys[]` containing string representations of each message code.
  **
- ** We also support the addition of message codes from other modules,
- ** such as from Tidy's accessibility module.
+ ** In order to keep code maintainable and make it simple to add new messages,
+ ** the message code enums and `tidyStringsKeys[]` are generated dynamically
+ ** with preprocessor macros defined below.
  **
- ** In order to keep code maintainable and make it simple to add new
- ** messages, the message code enums and `tidyErrorFilterKeysStruct[]`
- ** are generated dynamically with preprocessor macros defined below.
+ ** Any visible FOREACH_MSG_* macro (including new ones) must be applied to the
+ ** `tidyStrings` enum with the `MAKE_ENUM()` macro in this file, and to the
+ ** `tidyStringsKeys[]` (in `messages.c`) with `MAKE_STRUCT` in this file.
  **
- ** Any visible FOREACH_MSG_* macro (including new ones) must be
- ** applied to the `tidyStrings` enum with the MAKE_ENUM() macro
- ** in this file, and to the `tidyErrorFilterKeysStruct[]` with
- ** MAKE_STRUCT in this file.
+ ** Modern IDE's will dynamically pre-process all of these macros, enabling
+ ** code-completion of these enums and array of structs.
  **
- ** Modern IDE's will dynamically pre-process all of these macros,
- ** enabling code-completion of these enums and array of structs.
+ ** @{
  ******************************************************************************/
+
+/* MARK: - Code Generation Macros */
+/** @name Code Generation Macros
+ ** These macros generate the enums and arrays from the Content Generation
+ ** Macros defined below.
+ ** @{
+ */
+
+/** Used to populate the contents of an enumerator, such as `tidyStrings`. */
+#define MAKE_ENUM(MESSAGE) MESSAGE,
+
+/** Used to populate the contents of a structure, such as tidyStringsKeys[]. */
+#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
+
+
+/** @} */
+/* MARK: - Content Generation Macros */
+/** @name Content Generation Macros
+ ** These macros generate the individual entries in the enums and structs used
+ ** to manage strings in Tidy.
+ ** @{
+ */
+
+/** Codes for populating tidyConfigCategory enumeration. */
+#define FOREACH_TIDYCONFIGCATEGORY(FN)                                    \
+    FN(TidyMarkup)           /**< Markup options: (X)HTML version, etc */ \
+    FN(TidyDiagnostics)      /**< Diagnostics */                          \
+    FN(TidyPrettyPrint)      /**< Output layout */                        \
+    FN(TidyEncoding)         /**< Character encodings */                  \
+    FN(TidyMiscellaneous)    /**< File handling, message format, etc. */  \
+    FN(TidyInternalCategory) /**< Option is internal only. */
+
+
+/** Reports for entities/numeric character references. */
+#define FOREACH_MSG_ENTITIES(FN) \
+    FN(APOS_UNDEFINED)           \
+    FN(MISSING_SEMICOLON_NCR)    \
+    FN(MISSING_SEMICOLON)        \
+    FN(UNESCAPED_AMPERSAND)      \
+    FN(UNKNOWN_ENTITY)
+
+
+/** Report codes for element messages. */
+#define FOREACH_MSG_ELEMENT(FN)       \
+    FN(BAD_CDATA_CONTENT)             \
+    FN(BAD_COMMENT_CHARS)             \
+    FN(BAD_XML_COMMENT)               \
+    FN(CANT_BE_NESTED)                \
+    FN(COERCE_TO_ENDTAG_WARN)         \
+    FN(COERCE_TO_ENDTAG)              \
+    FN(CONTENT_AFTER_BODY)            \
+    FN(DISCARDING_UNEXPECTED)         \
+    FN(XML_DECLARATION_DETECTED)      \
+    FN(DOCTYPE_AFTER_TAGS)            \
+    FN(DTYPE_NOT_UPPER_CASE)          \
+    FN(DUPLICATE_FRAMESET)            \
+    FN(ELEMENT_NOT_EMPTY)             \
+    FN(ELEMENT_VERS_MISMATCH_ERROR)   \
+    FN(ELEMENT_VERS_MISMATCH_WARN)    \
+    FN(ENCODING_IO_CONFLICT)          \
+    FN(ILLEGAL_NESTING)               \
+    FN(INCONSISTENT_NAMESPACE)        \
+    FN(INCONSISTENT_VERSION)          \
+    FN(INSERTING_TAG)                 \
+    FN(MALFORMED_COMMENT)             \
+    FN(MALFORMED_DOCTYPE)             \
+    FN(MISSING_DOCTYPE)               \
+    FN(MISSING_ENDTAG_BEFORE)         \
+    FN(MISSING_ENDTAG_FOR)            \
+    FN(MISSING_STARTTAG)              \
+    FN(MISSING_TITLE_ELEMENT)         \
+    FN(MIXED_CONTENT_IN_BLOCK)        \
+    FN(NESTED_EMPHASIS)               \
+    FN(NESTED_QUOTATION)              \
+    FN(NOFRAMES_CONTENT)              \
+    FN(NON_MATCHING_ENDTAG)           \
+    FN(OBSOLETE_ELEMENT)              \
+    FN(PROPRIETARY_ELEMENT)           \
+    FN(REPLACING_ELEMENT)             \
+    FN(CUSTOM_TAG_DETECTED)           \
+    FN(REPLACING_UNEX_ELEMENT)        \
+    FN(SPACE_PRECEDING_XMLDECL)       \
+    FN(SUSPECTED_MISSING_QUOTE)       \
+    FN(TAG_NOT_ALLOWED_IN)            \
+    FN(TOO_MANY_ELEMENTS_IN)          \
+    FN(TOO_MANY_ELEMENTS)             \
+    FN(TRIM_EMPTY_ELEMENT)            \
+    FN(UNESCAPED_ELEMENT)             \
+    FN(UNEXPECTED_END_OF_FILE)        \
+    FN(UNEXPECTED_ENDTAG_IN)          \
+    FN(UNEXPECTED_ENDTAG)             \
+    FN(UNKNOWN_ELEMENT)               \
+    FN(UNKNOWN_ELEMENT_LOOKS_CUSTOM)  \
+    FN(USING_BR_INPLACE_OF)
+
+
+/** Report codes used for attribute messages. */
+#define FOREACH_MSG_ATTRIBUTE(FN) \
+        FN(ANCHOR_NOT_UNIQUE)              \
+        FN(ATTR_VALUE_NOT_LCASE)           \
+        FN(BACKSLASH_IN_URI)               \
+        FN(BAD_ATTRIBUTE_VALUE_REPLACED)   \
+        FN(BAD_ATTRIBUTE_VALUE)            \
+        FN(BAD_SUMMARY_HTML5)              \
+        FN(ESCAPED_ILLEGAL_URI)            \
+        FN(FIXED_BACKSLASH)                \
+        FN(ID_NAME_MISMATCH)               \
+        FN(ILLEGAL_URI_REFERENCE)          \
+        FN(INSERTING_ATTRIBUTE)            \
+        FN(INSERTING_AUTO_ATTRIBUTE)       \
+        FN(INVALID_ATTRIBUTE)              \
+        FN(INVALID_XML_ID)                 \
+        FN(JOINING_ATTRIBUTE)              \
+        FN(MISMATCHED_ATTRIBUTE_ERROR)     \
+        FN(MISMATCHED_ATTRIBUTE_WARN)      \
+        FN(ATTRIBUTE_IS_NOT_ALLOWED)       \
+        FN(MISSING_ATTR_VALUE)             \
+        FN(MISSING_ATTRIBUTE)              \
+        FN(MISSING_IMAGEMAP)               \
+        FN(MISSING_QUOTEMARK)              \
+        FN(NEWLINE_IN_URI)                 \
+        FN(PREVIOUS_LOCATION)              \
+        FN(PROPRIETARY_ATTR_VALUE)         \
+        FN(PROPRIETARY_ATTRIBUTE)          \
+        FN(REMOVED_HTML5)                  \
+        FN(REPEATED_ATTRIBUTE)             \
+        FN(UNEXPECTED_END_OF_FILE_ATTR)    \
+        FN(UNEXPECTED_EQUALSIGN)           \
+        FN(UNEXPECTED_GT)                  \
+        FN(UNEXPECTED_QUOTEMARK)           \
+        FN(UNKNOWN_ATTRIBUTE)              \
+        FN(WHITE_IN_URI)                   \
+        FN(XML_ATTRIBUTE_VALUE)            \
+        FN(XML_ID_SYNTAX)
+
+
+/** Report codes for character encoding errors. */
+#define FOREACH_MSG_ENCODING(FN) \
+        FN(BAD_SURROGATE_LEAD)      \
+        FN(BAD_SURROGATE_PAIR)      \
+        FN(BAD_SURROGATE_TAIL)      \
+        FN(ENCODING_MISMATCH)       \
+        FN(INVALID_NCR)             \
+        FN(INVALID_SGML_CHARS)      \
+        FN(INVALID_URI)             \
+        FN(INVALID_UTF8)            \
+        FN(INVALID_UTF16)           \
+        FN(VENDOR_SPECIFIC_CHARS)
+
+
+/** Miscellaneous config and information messages. */
+#define FOREACH_MSG_OTHER(FN) \
+        FN(STRING_CONTENT_LOOKS)      /* `Document content looks like %s`. */                   \
+        FN(STRING_DOCTYPE_GIVEN)      /* `Doctype given is \"%s\". */                           \
+        FN(STRING_HTML_PROPRIETARY)   /* `HTML Proprietary`/ */                                 \
+        FN(STRING_MISSING_MALFORMED)  /* For `missing or malformed argument for option: %s`. */ \
+        FN(STRING_NO_SYSID)           /* `No system identifier in emitted doctype`. */          \
+        FN(STRING_UNKNOWN_OPTION)     /* For retrieving a string `unknown option: %s`. */       \
+        FN(TIDYCUSTOMNO_STRING)              \
+        FN(TIDYCUSTOMBLOCKLEVEL_STRING)      \
+        FN(TIDYCUSTOMEMPTY_STRING)           \
+        FN(TIDYCUSTOMINLINE_STRING)          \
+        FN(TIDYCUSTOMPRE_STRING)             \
+
+
+/** Report codes from the accessibility module. */
+#define FOREACH_MSG_ACCESS(FN) \
+/* [1.1.1.1] */     FN(IMG_MISSING_ALT)                                 \
+/* [1.1.1.2] */     FN(IMG_ALT_SUSPICIOUS_FILENAME)                     \
+/* [1.1.1.3] */     FN(IMG_ALT_SUSPICIOUS_FILE_SIZE)                    \
+/* [1.1.1.4] */     FN(IMG_ALT_SUSPICIOUS_PLACEHOLDER)                  \
+/* [1.1.1.10] */    FN(IMG_ALT_SUSPICIOUS_TOO_LONG)                     \
+/* [1.1.1.11] */    FN(IMG_MISSING_ALT_BULLET)                          \
+/* [1.1.1.12] */    FN(IMG_MISSING_ALT_H_RULE)                          \
+/* [1.1.2.1] */     FN(IMG_MISSING_LONGDESC_DLINK)                      \
+/* [1.1.2.2] */     FN(IMG_MISSING_DLINK)                               \
+/* [1.1.2.3] */     FN(IMG_MISSING_LONGDESC)                            \
+/* [1.1.2.5] */     FN(LONGDESC_NOT_REQUIRED)                           \
+/* [1.1.3.1] */     FN(IMG_BUTTON_MISSING_ALT)                          \
+/* [1.1.4.1] */     FN(APPLET_MISSING_ALT)                              \
+/* [1.1.5.1] */     FN(OBJECT_MISSING_ALT)                              \
+/* [1.1.6.1] */     FN(AUDIO_MISSING_TEXT_WAV)                          \
+/* [1.1.6.2] */     FN(AUDIO_MISSING_TEXT_AU)                           \
+/* [1.1.6.3] */     FN(AUDIO_MISSING_TEXT_AIFF)                         \
+/* [1.1.6.4] */     FN(AUDIO_MISSING_TEXT_SND)                          \
+/* [1.1.6.5] */     FN(AUDIO_MISSING_TEXT_RA)                           \
+/* [1.1.6.6] */     FN(AUDIO_MISSING_TEXT_RM)                           \
+/* [1.1.8.1] */     FN(FRAME_MISSING_LONGDESC)                          \
+/* [1.1.9.1] */     FN(AREA_MISSING_ALT)                                \
+/* [1.1.10.1] */    FN(SCRIPT_MISSING_NOSCRIPT)                         \
+/* [1.1.12.1] */    FN(ASCII_REQUIRES_DESCRIPTION)                      \
+/* [1.2.1.1] */     FN(IMG_MAP_SERVER_REQUIRES_TEXT_LINKS)              \
+/* [1.4.1.1] */     FN(MULTIMEDIA_REQUIRES_TEXT)                        \
+/* [1.5.1.1] */     FN(IMG_MAP_CLIENT_MISSING_TEXT_LINKS)               \
+/* [2.1.1.1] */     FN(INFORMATION_NOT_CONVEYED_IMAGE)                  \
+/* [2.1.1.2] */     FN(INFORMATION_NOT_CONVEYED_APPLET)                 \
+/* [2.1.1.3] */     FN(INFORMATION_NOT_CONVEYED_OBJECT)                 \
+/* [2.1.1.4] */     FN(INFORMATION_NOT_CONVEYED_SCRIPT)                 \
+/* [2.1.1.5] */     FN(INFORMATION_NOT_CONVEYED_INPUT)                  \
+/* [2.2.1.1] */     FN(COLOR_CONTRAST_TEXT)                             \
+/* [2.2.1.2] */     FN(COLOR_CONTRAST_LINK)                             \
+/* [2.2.1.3] */     FN(COLOR_CONTRAST_ACTIVE_LINK)                      \
+/* [2.2.1.4] */     FN(COLOR_CONTRAST_VISITED_LINK)                     \
+/* [3.2.1.1] */     FN(DOCTYPE_MISSING)                                 \
+/* [3.3.1.1] */     FN(STYLE_SHEET_CONTROL_PRESENTATION)                \
+/* [3.5.1.1] */     FN(HEADERS_IMPROPERLY_NESTED)                       \
+/* [3.5.2.1] */     FN(POTENTIAL_HEADER_BOLD)                           \
+/* [3.5.2.2] */     FN(POTENTIAL_HEADER_ITALICS)                        \
+/* [3.5.2.3] */     FN(POTENTIAL_HEADER_UNDERLINE)                      \
+/* [3.5.3.1] */     FN(HEADER_USED_FORMAT_TEXT)                         \
+/* [3.6.1.1] */     FN(LIST_USAGE_INVALID_UL)                           \
+/* [3.6.1.2] */     FN(LIST_USAGE_INVALID_OL)                           \
+/* [3.6.1.4] */     FN(LIST_USAGE_INVALID_LI)                           \
+/* [4.1.1.1] */     FN(INDICATE_CHANGES_IN_LANGUAGE)                    \
+/* [4.3.1.1] */     FN(LANGUAGE_NOT_IDENTIFIED)                         \
+/* [4.3.1.1] */     FN(LANGUAGE_INVALID)                                \
+/* [5.1.2.1] */     FN(DATA_TABLE_MISSING_HEADERS)                      \
+/* [5.1.2.2] */     FN(DATA_TABLE_MISSING_HEADERS_COLUMN)               \
+/* [5.1.2.3] */     FN(DATA_TABLE_MISSING_HEADERS_ROW)                  \
+/* [5.2.1.1] */     FN(DATA_TABLE_REQUIRE_MARKUP_COLUMN_HEADERS)        \
+/* [5.2.1.2] */     FN(DATA_TABLE_REQUIRE_MARKUP_ROW_HEADERS)           \
+/* [5.3.1.1] */     FN(LAYOUT_TABLES_LINEARIZE_PROPERLY)                \
+/* [5.4.1.1] */     FN(LAYOUT_TABLE_INVALID_MARKUP)                     \
+/* [5.5.1.1] */     FN(TABLE_MISSING_SUMMARY)                           \
+/* [5.5.1.2] */     FN(TABLE_SUMMARY_INVALID_NULL)                      \
+/* [5.5.1.3] */     FN(TABLE_SUMMARY_INVALID_SPACES)                    \
+/* [5.5.1.6] */     FN(TABLE_SUMMARY_INVALID_PLACEHOLDER)               \
+/* [5.5.2.1] */     FN(TABLE_MISSING_CAPTION)                           \
+/* [5.6.1.1] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR)                   \
+/* [5.6.1.2] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR_NULL)              \
+/* [5.6.1.3] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR_SPACES)            \
+/* [6.1.1.1] */     FN(STYLESHEETS_REQUIRE_TESTING_LINK)                \
+/* [6.1.1.2] */     FN(STYLESHEETS_REQUIRE_TESTING_STYLE_ELEMENT)       \
+/* [6.1.1.3] */     FN(STYLESHEETS_REQUIRE_TESTING_STYLE_ATTR)          \
+/* [6.2.1.1] */     FN(FRAME_SRC_INVALID)                               \
+/* [6.2.2.1] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_APPLET)        \
+/* [6.2.2.2] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_SCRIPT)        \
+/* [6.2.2.3] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_OBJECT)        \
+/* [6.3.1.1] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_SCRIPT)     \
+/* [6.3.1.2] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_OBJECT)     \
+/* [6.3.1.3] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_EMBED)      \
+/* [6.3.1.4] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_APPLET)     \
+/* [6.5.1.1] */     FN(FRAME_MISSING_NOFRAMES)                          \
+/* [6.5.1.2] */     FN(NOFRAMES_INVALID_NO_VALUE)                       \
+/* [6.5.1.3] */     FN(NOFRAMES_INVALID_CONTENT)                        \
+/* [6.5.1.4] */     FN(NOFRAMES_INVALID_LINK)                           \
+/* [7.1.1.1] */     FN(REMOVE_FLICKER_SCRIPT)                           \
+/* [7.1.1.2] */     FN(REMOVE_FLICKER_OBJECT)                           \
+/* [7.1.1.3] */     FN(REMOVE_FLICKER_EMBED)                            \
+/* [7.1.1.4] */     FN(REMOVE_FLICKER_APPLET)                           \
+/* [7.1.1.5] */     FN(REMOVE_FLICKER_ANIMATED_GIF)                     \
+/* [7.2.1.1] */     FN(REMOVE_BLINK_MARQUEE)                            \
+/* [7.4.1.1] */     FN(REMOVE_AUTO_REFRESH)                             \
+/* [7.5.1.1] */     FN(REMOVE_AUTO_REDIRECT)                            \
+/* [8.1.1.1] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_SCRIPT)   \
+/* [8.1.1.2] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_OBJECT)   \
+/* [8.1.1.3] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_APPLET)   \
+/* [8.1.1.4] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_EMBED)    \
+/* [9.1.1.1] */     FN(IMAGE_MAP_SERVER_SIDE_REQUIRES_CONVERSION)       \
+/* [9.3.1.1] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_DOWN)    \
+/* [9.3.1.2] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_UP)      \
+/* [9.3.1.3] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_CLICK)         \
+/* [9.3.1.4] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OVER)    \
+/* [9.3.1.5] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OUT)     \
+/* [9.3.1.6] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE)    \
+/* [10.1.1.1] */    FN(NEW_WINDOWS_REQUIRE_WARNING_NEW)                 \
+/* [10.1.1.2] */    FN(NEW_WINDOWS_REQUIRE_WARNING_BLANK)               \
+/* [10.2.1.1] */    FN(LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT)          \
+/* [10.2.1.2] */    FN(LABEL_NEEDS_REPOSITIONING_AFTER_INPUT)           \
+/* [10.4.1.1] */    FN(FORM_CONTROL_REQUIRES_DEFAULT_TEXT)              \
+/* [10.4.1.2] */    FN(FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL)          \
+/* [10.4.1.3] */    FN(FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES)        \
+/* [11.2.1.1] */    FN(REPLACE_DEPRECATED_HTML_APPLET)                  \
+/* [11.2.1.2] */    FN(REPLACE_DEPRECATED_HTML_BASEFONT)                \
+/* [11.2.1.3] */    FN(REPLACE_DEPRECATED_HTML_CENTER)                  \
+/* [11.2.1.4] */    FN(REPLACE_DEPRECATED_HTML_DIR)                     \
+/* [11.2.1.5] */    FN(REPLACE_DEPRECATED_HTML_FONT)                    \
+/* [11.2.1.6] */    FN(REPLACE_DEPRECATED_HTML_ISINDEX)                 \
+/* [11.2.1.7] */    FN(REPLACE_DEPRECATED_HTML_MENU)                    \
+/* [11.2.1.8] */    FN(REPLACE_DEPRECATED_HTML_S)                       \
+/* [11.2.1.9] */    FN(REPLACE_DEPRECATED_HTML_STRIKE)                  \
+/* [11.2.1.10] */   FN(REPLACE_DEPRECATED_HTML_U)                       \
+/* [12.1.1.1] */    FN(FRAME_MISSING_TITLE)                             \
+/* [12.1.1.2] */    FN(FRAME_TITLE_INVALID_NULL)                        \
+/* [12.1.1.3] */    FN(FRAME_TITLE_INVALID_SPACES)                      \
+/* [12.4.1.1] */    FN(ASSOCIATE_LABELS_EXPLICITLY)                     \
+/* [12.4.1.2] */    FN(ASSOCIATE_LABELS_EXPLICITLY_FOR)                 \
+/* [12.4.1.3] */    FN(ASSOCIATE_LABELS_EXPLICITLY_ID)                  \
+/* [13.1.1.1] */    FN(LINK_TEXT_NOT_MEANINGFUL)                        \
+/* [13.1.1.2] */    FN(LINK_TEXT_MISSING)                               \
+/* [13.1.1.3] */    FN(LINK_TEXT_TOO_LONG)                              \
+/* [13.1.1.4] */    FN(LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE)             \
+/* [13.1.1.5] */    FN(LINK_TEXT_NOT_MEANINGFUL_MORE)                   \
+/* [13.1.1.6] */    FN(LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS)            \
+/* [13.2.1.1] */    FN(METADATA_MISSING)                                \
+/* [13.2.1.2] */    FN(METADATA_MISSING_LINK)                           \
+/* [13.2.1.3] */    FN(METADATA_MISSING_REDIRECT_AUTOREFRESH)           \
+/* [13.10.1.1] */   FN(SKIPOVER_ASCII_ART)
+
+
+/** These message codes comprise every possible message that can be output by
+ ** Tidy that are *not* diagnostic style messages, and are *not* console
+ ** application specific messages.
+ */
+#define FOREACH_MSG_MISC(FN) \
+/** Point to Accessibility Guidelines. */             FN(ACCESS_URL)                 \
+/** Point to Tidy accessibility page. */              FN(ATRC_ACCESS_URL)            \
+/** File can't be opened. */                          FN(FILE_CANT_OPEN)             \
+/* Localized `line %d column %d` text. */            FN(LINE_COLUMN_STRING)         \
+/* For `discarding`. */                              FN(STRING_DISCARDING)          \
+/* `%u %s, %u %s were found!`. */                    FN(STRING_ERROR_COUNT)         \
+/* `error` and `errors`. */                          FN(STRING_ERROR_COUNT_ERROR)   \
+/* `warning` and `warnings`. */                      FN(STRING_ERROR_COUNT_WARNING) \
+/* Accessibility hello message. */                   FN(STRING_HELLO_ACCESS)        \
+/* `No warnings or errors were found.\n\n`. */       FN(STRING_NO_ERRORS)           \
+/* ` Not all warnings/errors were shown.\n\n`. */    FN(STRING_NOT_ALL_SHOWN)       \
+/* For `plain text`. */                              FN(STRING_PLAIN_TEXT)          \
+/* For `replacing`. */                               FN(STRING_REPLACING)           \
+/* For `specified`. */                               FN(STRING_SPECIFIED)           \
+/* For `XML declaration`. */                         FN(STRING_XML_DECLARATION)     \
+/* Explanatory text. */                              FN(TEXT_ACCESS_ADVICE1)        \
+/* Explanatory text. */                              FN(TEXT_ACCESS_ADVICE2)        \
+/* Explanatory text. */                              FN(TEXT_BAD_FORM)              \
+/* Explanatory text. */                              FN(TEXT_BAD_MAIN)              \
+/* Explanatory text. */                              FN(TEXT_GENERAL_INFO)          \
+/* Explanatory text. */                              FN(TEXT_GENERAL_INFO_PLEA)     \
+/* Describes the HTML table algorithm. */            FN(TEXT_HTML_T_ALGORITHM)      \
+/* Explanatory text. */                              FN(TEXT_INVALID_URI)           \
+/* Explanatory text. */                              FN(TEXT_INVALID_UTF16)         \
+/* Explanatory text. */                              FN(TEXT_INVALID_UTF8)          \
+/* Explanatory text. */                              FN(TEXT_M_IMAGE_ALT)           \
+/* Explanatory text. */                              FN(TEXT_M_IMAGE_MAP)           \
+/* Explanatory text. */                              FN(TEXT_M_LINK_ALT)            \
+/* Explanatory text. */                              FN(TEXT_M_SUMMARY)             \
+/* Explanatory text. */                              FN(TEXT_NEEDS_INTERVENTION)    \
+/* Explanatory text. */                              FN(TEXT_SGML_CHARS)            \
+/* Explanatory text. */                              FN(TEXT_USING_BODY)            \
+/* Explanatory text. */                              FN(TEXT_USING_FONT)            \
+/* Explanatory text. */                              FN(TEXT_USING_FRAMES)          \
+/* Explanatory text. */                              FN(TEXT_USING_LAYER)           \
+/* Explanatory text. */                              FN(TEXT_USING_NOBR)            \
+/* Explanatory text. */                              FN(TEXT_USING_SPACER)          \
+/* Explanatory text. */                              FN(TEXT_VENDOR_CHARS)          \
+/* Explanatory text. */                              FN(TEXT_WINDOWS_CHARS)
+
+
+/** These message codes comprise every message is exclusive to theTidy console
+ ** application. It it possible to build LibTidy without these strings.
+ */
+#if SUPPORT_CONSOLE_APP
+#define FOREACH_MSG_CONSOLE(FN) \
+        FN(TC_LABEL_COL)                    \
+        FN(TC_LABEL_FILE)                   \
+        FN(TC_LABEL_LANG)                   \
+        FN(TC_LABEL_LEVL)                   \
+        FN(TC_LABEL_OPT)                    \
+        FN(TC_MAIN_ERROR_LOAD_CONFIG)       \
+        FN(TC_OPT_ACCESS)                   \
+        FN(TC_OPT_ASCII)                    \
+        FN(TC_OPT_ASHTML)                   \
+        FN(TC_OPT_ASXML)                    \
+        FN(TC_OPT_BARE)                     \
+        FN(TC_OPT_BIG5)                     \
+        FN(TC_OPT_CLEAN)                    \
+        FN(TC_OPT_CONFIG)                   \
+        FN(TC_OPT_ERRORS)                   \
+        FN(TC_OPT_FILE)                     \
+        FN(TC_OPT_GDOC)                     \
+        FN(TC_OPT_HELP)                     \
+        FN(TC_OPT_HELPCFG)                  \
+        FN(TC_OPT_HELPOPT)                  \
+        FN(TC_OPT_IBM858)                   \
+        FN(TC_OPT_INDENT)                   \
+        FN(TC_OPT_ISO2022)                  \
+        FN(TC_OPT_LANGUAGE)                 \
+        FN(TC_OPT_LATIN0)                   \
+        FN(TC_OPT_LATIN1)                   \
+        FN(TC_OPT_MAC)                      \
+        FN(TC_OPT_MODIFY)                   \
+        FN(TC_OPT_NUMERIC)                  \
+        FN(TC_OPT_OMIT)                     \
+        FN(TC_OPT_OUTPUT)                   \
+        FN(TC_OPT_QUIET)                    \
+        FN(TC_OPT_RAW)                      \
+        FN(TC_OPT_SHIFTJIS)                 \
+        FN(TC_OPT_SHOWCFG)                  \
+        FN(TC_OPT_UPPER)                    \
+        FN(TC_OPT_UTF16)                    \
+        FN(TC_OPT_UTF16BE)                  \
+        FN(TC_OPT_UTF16LE)                  \
+        FN(TC_OPT_UTF8)                     \
+        FN(TC_OPT_VERSION)                  \
+        FN(TC_OPT_WIN1252)                  \
+        FN(TC_OPT_WRAP)                     \
+        FN(TC_OPT_XML)                      \
+        FN(TC_OPT_XMLCFG)                   \
+        FN(TC_OPT_XMLSTRG)                  \
+        FN(TC_OPT_XMLERRS)                  \
+        FN(TC_OPT_XMLOPTS)                  \
+        FN(TC_OPT_XMLHELP)                  \
+        FN(TC_STRING_CONF_HEADER)           \
+        FN(TC_STRING_CONF_NAME)             \
+        FN(TC_STRING_CONF_TYPE)             \
+        FN(TC_STRING_CONF_VALUE)            \
+        FN(TC_STRING_CONF_NOTE)             \
+        FN(TC_STRING_OPT_NOT_DOCUMENTED)    \
+        FN(TC_STRING_OUT_OF_MEMORY)         \
+        FN(TC_STRING_FATAL_ERROR)           \
+        FN(TC_STRING_FILE_MANIP)            \
+        FN(TC_STRING_LANG_MUST_SPECIFY)     \
+        FN(TC_STRING_LANG_NOT_FOUND)        \
+        FN(TC_STRING_MUST_SPECIFY)          \
+        FN(TC_STRING_PROCESS_DIRECTIVES)    \
+        FN(TC_STRING_CHAR_ENCODING)         \
+        FN(TC_STRING_MISC)                  \
+        FN(TC_STRING_XML)                   \
+        FN(TC_STRING_UNKNOWN_OPTION)        \
+        FN(TC_STRING_UNKNOWN_OPTION_B)      \
+        FN(TC_STRING_VERS_A)                \
+        FN(TC_STRING_VERS_B)                \
+        FN(TC_TXT_HELP_1)                   \
+        FN(TC_TXT_HELP_2A)                  \
+        FN(TC_TXT_HELP_2B)                  \
+        FN(TC_TXT_HELP_3)                   \
+        FN(TC_TXT_HELP_CONFIG)              \
+        FN(TC_TXT_HELP_CONFIG_NAME)         \
+        FN(TC_TXT_HELP_CONFIG_TYPE)         \
+        FN(TC_TXT_HELP_CONFIG_ALLW)         \
+        FN(TC_TXT_HELP_LANG_1)              \
+        FN(TC_TXT_HELP_LANG_2)              \
+        FN(TC_TXT_HELP_LANG_3)
+#endif /* SUPPORT_CONSOLE_APP */
+
+/** @} */
+
+/** @} end group public_enum_gen */
 
 
 /* MARK: - Public Enumerations */
@@ -86,32 +519,12 @@ extern "C" {
  ** @{ */
 
 
-/** Categories of Tidy configuration options, which are used mostly by user
- ** interfaces to sort Tidy options into related groups.
- **
- ** @remark These enum members all have associated localized strings available
- **         for internal LibTidy use, suitable for use as a category label.
- **         TODO: add string keys for LibTidy users.
- **
- ** @sa     `config.c:option_defs[]` for internal implementation details.
- */
-typedef enum
-{
-  TidyMarkup = 300,     /**< Markup options: (X)HTML version, etc */
-  TidyDiagnostics,      /**< Diagnostics */
-  TidyPrettyPrint,      /**< Output layout */
-  TidyEncoding,         /**< Character encodings */
-  TidyMiscellaneous,    /**< File handling, message format, etc. */
-  TidyInternalCategory  /**< Option is internal only. */
-} TidyConfigCategory;
-
-
 /** Option IDs are used used to get and/or set configuration option values and
  **        retrieve their descriptions.
  **
  ** @remark These enum members all have associated localized strings available
- **         for internal LibTidy use, which describe the purpose of the option.
- **         TODO: add string keys for LibTidy users.
+ **         which describe the purpose of the option. These descriptions are
+ **         available via their enum values only.
  **
  ** @sa     `config.c:option_defs[]` for internal implementation details; that
  **         array is where you will implement options defined in this enum; and
@@ -238,6 +651,22 @@ typedef enum
     TidyXmlTags,                 /**< Treat input as XML */
     N_TIDY_OPTIONS               /**< Must be last */
 } TidyOptionId;
+
+
+/** Categories of Tidy configuration options, which are used mostly by user
+ ** interfaces to sort Tidy options into related groups.
+ **
+ ** @remark These enum members all have associated localized strings available
+ **         suitable for use as a category label, and are available with either
+ **         the enum value, or a string version of the name.
+ **
+ ** @sa     `config.c:option_defs[]` for internal implementation details.
+ */
+typedef enum
+{
+    TidyUnknownCategory = 300,  /**< Unknown Category! */
+    FOREACH_TIDYCONFIGCATEGORY(MAKE_ENUM)
+} TidyConfigCategory;
 
 
 /** A Tidy configuration option can have one of these data types. */
@@ -914,440 +1343,7 @@ typedef enum
 
 /** @} */
 /** @} end group public_enumerations*/
-/** @addtogroup public_enum_gen */
-/** @{ */
 
-/* MARK: - Code Generation Macros */
-/** @name Code Generation Macros
- ** These macros generate the enums and arrays from the Content Generation
- ** Macros defined below.
- ** @{
- */
-
-/** Used to populate the contents of an enumerator, such as tidyStrings.
- */
-#define MAKE_ENUM(MESSAGE) MESSAGE,
-
-/** Used to populate the contents of a structure, such as 
- ** tidyErrorFilterKeysStruct[]. 
- */
-#define MAKE_STRUCT(MESSAGE) {#MESSAGE, MESSAGE},
-
-
-/** @} */
-
-
-/* MARK: - Content Generation Macros */
-/** @name Content Generation Macros
- ** These macros generate the individual entries in the enums and structs used
- ** to manage strings in Tidy.
- ** @{
- */
-
-
-/** Report codes for entities/numeric character references. */
-#define FOREACH_MSG_ENTITIES(FN) \
-        FN(APOS_UNDEFINED)          \
-        FN(MISSING_SEMICOLON_NCR)   \
-        FN(MISSING_SEMICOLON)       \
-        FN(UNESCAPED_AMPERSAND)     \
-        FN(UNKNOWN_ENTITY)
-
-
-/** Report codes for element messages. */
-#define FOREACH_MSG_ELEMENT(FN) \
-        FN(BAD_CDATA_CONTENT)             \
-        FN(BAD_COMMENT_CHARS)             \
-        FN(BAD_XML_COMMENT)               \
-        FN(CANT_BE_NESTED)                \
-        FN(COERCE_TO_ENDTAG_WARN)         \
-        FN(COERCE_TO_ENDTAG)              \
-        FN(CONTENT_AFTER_BODY)            \
-        FN(DISCARDING_UNEXPECTED)         \
-        FN(XML_DECLARATION_DETECTED)      \
-        FN(DOCTYPE_AFTER_TAGS)            \
-        FN(DTYPE_NOT_UPPER_CASE)          \
-        FN(DUPLICATE_FRAMESET)            \
-        FN(ELEMENT_NOT_EMPTY)             \
-        FN(ELEMENT_VERS_MISMATCH_ERROR)   \
-        FN(ELEMENT_VERS_MISMATCH_WARN)    \
-        FN(ENCODING_IO_CONFLICT)          \
-        FN(ILLEGAL_NESTING)               \
-        FN(INCONSISTENT_NAMESPACE)        \
-        FN(INCONSISTENT_VERSION)          \
-        FN(INSERTING_TAG)                 \
-        FN(MALFORMED_COMMENT)             \
-        FN(MALFORMED_DOCTYPE)             \
-        FN(MISSING_DOCTYPE)               \
-        FN(MISSING_ENDTAG_BEFORE)         \
-        FN(MISSING_ENDTAG_FOR)            \
-        FN(MISSING_STARTTAG)              \
-        FN(MISSING_TITLE_ELEMENT)         \
-        FN(MIXED_CONTENT_IN_BLOCK)        \
-        FN(NESTED_EMPHASIS)               \
-        FN(NESTED_QUOTATION)              \
-        FN(NOFRAMES_CONTENT)              \
-        FN(NON_MATCHING_ENDTAG)           \
-        FN(OBSOLETE_ELEMENT)              \
-        FN(PROPRIETARY_ELEMENT)           \
-        FN(REPLACING_ELEMENT)             \
-        FN(CUSTOM_TAG_DETECTED)           \
-        FN(REPLACING_UNEX_ELEMENT)        \
-        FN(SPACE_PRECEDING_XMLDECL)       \
-        FN(SUSPECTED_MISSING_QUOTE)       \
-        FN(TAG_NOT_ALLOWED_IN)            \
-        FN(TOO_MANY_ELEMENTS_IN)          \
-        FN(TOO_MANY_ELEMENTS)             \
-        FN(TRIM_EMPTY_ELEMENT)            \
-        FN(UNESCAPED_ELEMENT)             \
-        FN(UNEXPECTED_END_OF_FILE)        \
-        FN(UNEXPECTED_ENDTAG_IN)          \
-        FN(UNEXPECTED_ENDTAG)             \
-        FN(UNKNOWN_ELEMENT)               \
-        FN(UNKNOWN_ELEMENT_LOOKS_CUSTOM)  \
-        FN(USING_BR_INPLACE_OF)
-
-
-/** Report codes used for attribute messages. */
-#define FOREACH_MSG_ATTRIBUTE(FN) \
-        FN(ANCHOR_NOT_UNIQUE)              \
-        FN(ATTR_VALUE_NOT_LCASE)           \
-        FN(BACKSLASH_IN_URI)               \
-        FN(BAD_ATTRIBUTE_VALUE_REPLACED)   \
-        FN(BAD_ATTRIBUTE_VALUE)            \
-        FN(BAD_SUMMARY_HTML5)              \
-        FN(ESCAPED_ILLEGAL_URI)            \
-        FN(FIXED_BACKSLASH)                \
-        FN(ID_NAME_MISMATCH)               \
-        FN(ILLEGAL_URI_REFERENCE)          \
-        FN(INSERTING_ATTRIBUTE)            \
-        FN(INSERTING_AUTO_ATTRIBUTE)       \
-        FN(INVALID_ATTRIBUTE)              \
-        FN(INVALID_XML_ID)                 \
-        FN(JOINING_ATTRIBUTE)              \
-        FN(MISMATCHED_ATTRIBUTE_ERROR)     \
-        FN(MISMATCHED_ATTRIBUTE_WARN)      \
-        FN(ATTRIBUTE_IS_NOT_ALLOWED)       \
-        FN(MISSING_ATTR_VALUE)             \
-        FN(MISSING_ATTRIBUTE)              \
-        FN(MISSING_IMAGEMAP)               \
-        FN(MISSING_QUOTEMARK)              \
-        FN(NEWLINE_IN_URI)                 \
-        FN(PREVIOUS_LOCATION)              \
-        FN(PROPRIETARY_ATTR_VALUE)         \
-        FN(PROPRIETARY_ATTRIBUTE)          \
-        FN(REMOVED_HTML5)                  \
-        FN(REPEATED_ATTRIBUTE)             \
-        FN(UNEXPECTED_END_OF_FILE_ATTR)    \
-        FN(UNEXPECTED_EQUALSIGN)           \
-        FN(UNEXPECTED_GT)                  \
-        FN(UNEXPECTED_QUOTEMARK)           \
-        FN(UNKNOWN_ATTRIBUTE)              \
-        FN(WHITE_IN_URI)                   \
-        FN(XML_ATTRIBUTE_VALUE)            \
-        FN(XML_ID_SYNTAX)
-
-
-/** Report codes for character encoding errors. */
-#define FOREACH_MSG_ENCODING(FN) \
-        FN(BAD_SURROGATE_LEAD)      \
-        FN(BAD_SURROGATE_PAIR)      \
-        FN(BAD_SURROGATE_TAIL)      \
-        FN(ENCODING_MISMATCH)       \
-        FN(INVALID_NCR)             \
-        FN(INVALID_SGML_CHARS)      \
-        FN(INVALID_URI)             \
-        FN(INVALID_UTF8)            \
-        FN(INVALID_UTF16)           \
-        FN(VENDOR_SPECIFIC_CHARS)
-
-
-/** Miscellaneous config and information messages. */
-#define FOREACH_MSG_OTHER(FN) \
-        FN(STRING_CONTENT_LOOKS)      /* `Document content looks like %s`. */                   \
-        FN(STRING_DOCTYPE_GIVEN)      /* `Doctype given is \"%s\". */                           \
-        FN(STRING_HTML_PROPRIETARY)   /* `HTML Proprietary`/ */                                 \
-        FN(STRING_MISSING_MALFORMED)  /* For `missing or malformed argument for option: %s`. */ \
-        FN(STRING_NO_SYSID)           /* `No system identifier in emitted doctype`. */          \
-        FN(STRING_UNKNOWN_OPTION)     /* For retrieving a string `unknown option: %s`. */       \
-        FN(TIDYCUSTOMNO_STRING)              \
-        FN(TIDYCUSTOMBLOCKLEVEL_STRING)      \
-        FN(TIDYCUSTOMEMPTY_STRING)           \
-        FN(TIDYCUSTOMINLINE_STRING)          \
-        FN(TIDYCUSTOMPRE_STRING)             \
-
-
-/** Report codes from the accessibility module. */
-#define FOREACH_MSG_ACCESS(FN) \
-/* [1.1.1.1] */     FN(IMG_MISSING_ALT)                                 \
-/* [1.1.1.2] */     FN(IMG_ALT_SUSPICIOUS_FILENAME)                     \
-/* [1.1.1.3] */     FN(IMG_ALT_SUSPICIOUS_FILE_SIZE)                    \
-/* [1.1.1.4] */     FN(IMG_ALT_SUSPICIOUS_PLACEHOLDER)                  \
-/* [1.1.1.10] */    FN(IMG_ALT_SUSPICIOUS_TOO_LONG)                     \
-/* [1.1.1.11] */    FN(IMG_MISSING_ALT_BULLET)                          \
-/* [1.1.1.12] */    FN(IMG_MISSING_ALT_H_RULE)                          \
-/* [1.1.2.1] */     FN(IMG_MISSING_LONGDESC_DLINK)                      \
-/* [1.1.2.2] */     FN(IMG_MISSING_DLINK)                               \
-/* [1.1.2.3] */     FN(IMG_MISSING_LONGDESC)                            \
-/* [1.1.2.5] */     FN(LONGDESC_NOT_REQUIRED)                           \
-/* [1.1.3.1] */     FN(IMG_BUTTON_MISSING_ALT)                          \
-/* [1.1.4.1] */     FN(APPLET_MISSING_ALT)                              \
-/* [1.1.5.1] */     FN(OBJECT_MISSING_ALT)                              \
-/* [1.1.6.1] */     FN(AUDIO_MISSING_TEXT_WAV)                          \
-/* [1.1.6.2] */     FN(AUDIO_MISSING_TEXT_AU)                           \
-/* [1.1.6.3] */     FN(AUDIO_MISSING_TEXT_AIFF)                         \
-/* [1.1.6.4] */     FN(AUDIO_MISSING_TEXT_SND)                          \
-/* [1.1.6.5] */     FN(AUDIO_MISSING_TEXT_RA)                           \
-/* [1.1.6.6] */     FN(AUDIO_MISSING_TEXT_RM)                           \
-/* [1.1.8.1] */     FN(FRAME_MISSING_LONGDESC)                          \
-/* [1.1.9.1] */     FN(AREA_MISSING_ALT)                                \
-/* [1.1.10.1] */    FN(SCRIPT_MISSING_NOSCRIPT)                         \
-/* [1.1.12.1] */    FN(ASCII_REQUIRES_DESCRIPTION)                      \
-/* [1.2.1.1] */     FN(IMG_MAP_SERVER_REQUIRES_TEXT_LINKS)              \
-/* [1.4.1.1] */     FN(MULTIMEDIA_REQUIRES_TEXT)                        \
-/* [1.5.1.1] */     FN(IMG_MAP_CLIENT_MISSING_TEXT_LINKS)               \
-/* [2.1.1.1] */     FN(INFORMATION_NOT_CONVEYED_IMAGE)                  \
-/* [2.1.1.2] */     FN(INFORMATION_NOT_CONVEYED_APPLET)                 \
-/* [2.1.1.3] */     FN(INFORMATION_NOT_CONVEYED_OBJECT)                 \
-/* [2.1.1.4] */     FN(INFORMATION_NOT_CONVEYED_SCRIPT)                 \
-/* [2.1.1.5] */     FN(INFORMATION_NOT_CONVEYED_INPUT)                  \
-/* [2.2.1.1] */     FN(COLOR_CONTRAST_TEXT)                             \
-/* [2.2.1.2] */     FN(COLOR_CONTRAST_LINK)                             \
-/* [2.2.1.3] */     FN(COLOR_CONTRAST_ACTIVE_LINK)                      \
-/* [2.2.1.4] */     FN(COLOR_CONTRAST_VISITED_LINK)                     \
-/* [3.2.1.1] */     FN(DOCTYPE_MISSING)                                 \
-/* [3.3.1.1] */     FN(STYLE_SHEET_CONTROL_PRESENTATION)                \
-/* [3.5.1.1] */     FN(HEADERS_IMPROPERLY_NESTED)                       \
-/* [3.5.2.1] */     FN(POTENTIAL_HEADER_BOLD)                           \
-/* [3.5.2.2] */     FN(POTENTIAL_HEADER_ITALICS)                        \
-/* [3.5.2.3] */     FN(POTENTIAL_HEADER_UNDERLINE)                      \
-/* [3.5.3.1] */     FN(HEADER_USED_FORMAT_TEXT)                         \
-/* [3.6.1.1] */     FN(LIST_USAGE_INVALID_UL)                           \
-/* [3.6.1.2] */     FN(LIST_USAGE_INVALID_OL)                           \
-/* [3.6.1.4] */     FN(LIST_USAGE_INVALID_LI)                           \
-/* [4.1.1.1] */     FN(INDICATE_CHANGES_IN_LANGUAGE)                    \
-/* [4.3.1.1] */     FN(LANGUAGE_NOT_IDENTIFIED)                         \
-/* [4.3.1.1] */     FN(LANGUAGE_INVALID)                                \
-/* [5.1.2.1] */     FN(DATA_TABLE_MISSING_HEADERS)                      \
-/* [5.1.2.2] */     FN(DATA_TABLE_MISSING_HEADERS_COLUMN)               \
-/* [5.1.2.3] */     FN(DATA_TABLE_MISSING_HEADERS_ROW)                  \
-/* [5.2.1.1] */     FN(DATA_TABLE_REQUIRE_MARKUP_COLUMN_HEADERS)        \
-/* [5.2.1.2] */     FN(DATA_TABLE_REQUIRE_MARKUP_ROW_HEADERS)           \
-/* [5.3.1.1] */     FN(LAYOUT_TABLES_LINEARIZE_PROPERLY)                \
-/* [5.4.1.1] */     FN(LAYOUT_TABLE_INVALID_MARKUP)                     \
-/* [5.5.1.1] */     FN(TABLE_MISSING_SUMMARY)                           \
-/* [5.5.1.2] */     FN(TABLE_SUMMARY_INVALID_NULL)                      \
-/* [5.5.1.3] */     FN(TABLE_SUMMARY_INVALID_SPACES)                    \
-/* [5.5.1.6] */     FN(TABLE_SUMMARY_INVALID_PLACEHOLDER)               \
-/* [5.5.2.1] */     FN(TABLE_MISSING_CAPTION)                           \
-/* [5.6.1.1] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR)                   \
-/* [5.6.1.2] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR_NULL)              \
-/* [5.6.1.3] */     FN(TABLE_MAY_REQUIRE_HEADER_ABBR_SPACES)            \
-/* [6.1.1.1] */     FN(STYLESHEETS_REQUIRE_TESTING_LINK)                \
-/* [6.1.1.2] */     FN(STYLESHEETS_REQUIRE_TESTING_STYLE_ELEMENT)       \
-/* [6.1.1.3] */     FN(STYLESHEETS_REQUIRE_TESTING_STYLE_ATTR)          \
-/* [6.2.1.1] */     FN(FRAME_SRC_INVALID)                               \
-/* [6.2.2.1] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_APPLET)        \
-/* [6.2.2.2] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_SCRIPT)        \
-/* [6.2.2.3] */     FN(TEXT_EQUIVALENTS_REQUIRE_UPDATING_OBJECT)        \
-/* [6.3.1.1] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_SCRIPT)     \
-/* [6.3.1.2] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_OBJECT)     \
-/* [6.3.1.3] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_EMBED)      \
-/* [6.3.1.4] */     FN(PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_APPLET)     \
-/* [6.5.1.1] */     FN(FRAME_MISSING_NOFRAMES)                          \
-/* [6.5.1.2] */     FN(NOFRAMES_INVALID_NO_VALUE)                       \
-/* [6.5.1.3] */     FN(NOFRAMES_INVALID_CONTENT)                        \
-/* [6.5.1.4] */     FN(NOFRAMES_INVALID_LINK)                           \
-/* [7.1.1.1] */     FN(REMOVE_FLICKER_SCRIPT)                           \
-/* [7.1.1.2] */     FN(REMOVE_FLICKER_OBJECT)                           \
-/* [7.1.1.3] */     FN(REMOVE_FLICKER_EMBED)                            \
-/* [7.1.1.4] */     FN(REMOVE_FLICKER_APPLET)                           \
-/* [7.1.1.5] */     FN(REMOVE_FLICKER_ANIMATED_GIF)                     \
-/* [7.2.1.1] */     FN(REMOVE_BLINK_MARQUEE)                            \
-/* [7.4.1.1] */     FN(REMOVE_AUTO_REFRESH)                             \
-/* [7.5.1.1] */     FN(REMOVE_AUTO_REDIRECT)                            \
-/* [8.1.1.1] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_SCRIPT)   \
-/* [8.1.1.2] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_OBJECT)   \
-/* [8.1.1.3] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_APPLET)   \
-/* [8.1.1.4] */     FN(ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_EMBED)    \
-/* [9.1.1.1] */     FN(IMAGE_MAP_SERVER_SIDE_REQUIRES_CONVERSION)       \
-/* [9.3.1.1] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_DOWN)    \
-/* [9.3.1.2] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_UP)      \
-/* [9.3.1.3] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_CLICK)         \
-/* [9.3.1.4] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OVER)    \
-/* [9.3.1.5] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OUT)     \
-/* [9.3.1.6] */     FN(SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE)    \
-/* [10.1.1.1] */    FN(NEW_WINDOWS_REQUIRE_WARNING_NEW)                 \
-/* [10.1.1.2] */    FN(NEW_WINDOWS_REQUIRE_WARNING_BLANK)               \
-/* [10.2.1.1] */    FN(LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT)          \
-/* [10.2.1.2] */    FN(LABEL_NEEDS_REPOSITIONING_AFTER_INPUT)           \
-/* [10.4.1.1] */    FN(FORM_CONTROL_REQUIRES_DEFAULT_TEXT)              \
-/* [10.4.1.2] */    FN(FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL)          \
-/* [10.4.1.3] */    FN(FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES)        \
-/* [11.2.1.1] */    FN(REPLACE_DEPRECATED_HTML_APPLET)                  \
-/* [11.2.1.2] */    FN(REPLACE_DEPRECATED_HTML_BASEFONT)                \
-/* [11.2.1.3] */    FN(REPLACE_DEPRECATED_HTML_CENTER)                  \
-/* [11.2.1.4] */    FN(REPLACE_DEPRECATED_HTML_DIR)                     \
-/* [11.2.1.5] */    FN(REPLACE_DEPRECATED_HTML_FONT)                    \
-/* [11.2.1.6] */    FN(REPLACE_DEPRECATED_HTML_ISINDEX)                 \
-/* [11.2.1.7] */    FN(REPLACE_DEPRECATED_HTML_MENU)                    \
-/* [11.2.1.8] */    FN(REPLACE_DEPRECATED_HTML_S)                       \
-/* [11.2.1.9] */    FN(REPLACE_DEPRECATED_HTML_STRIKE)                  \
-/* [11.2.1.10] */   FN(REPLACE_DEPRECATED_HTML_U)                       \
-/* [12.1.1.1] */    FN(FRAME_MISSING_TITLE)                             \
-/* [12.1.1.2] */    FN(FRAME_TITLE_INVALID_NULL)                        \
-/* [12.1.1.3] */    FN(FRAME_TITLE_INVALID_SPACES)                      \
-/* [12.4.1.1] */    FN(ASSOCIATE_LABELS_EXPLICITLY)                     \
-/* [12.4.1.2] */    FN(ASSOCIATE_LABELS_EXPLICITLY_FOR)                 \
-/* [12.4.1.3] */    FN(ASSOCIATE_LABELS_EXPLICITLY_ID)                  \
-/* [13.1.1.1] */    FN(LINK_TEXT_NOT_MEANINGFUL)                        \
-/* [13.1.1.2] */    FN(LINK_TEXT_MISSING)                               \
-/* [13.1.1.3] */    FN(LINK_TEXT_TOO_LONG)                              \
-/* [13.1.1.4] */    FN(LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE)             \
-/* [13.1.1.5] */    FN(LINK_TEXT_NOT_MEANINGFUL_MORE)                   \
-/* [13.1.1.6] */    FN(LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS)            \
-/* [13.2.1.1] */    FN(METADATA_MISSING)                                \
-/* [13.2.1.2] */    FN(METADATA_MISSING_LINK)                           \
-/* [13.2.1.3] */    FN(METADATA_MISSING_REDIRECT_AUTOREFRESH)           \
-/* [13.10.1.1] */   FN(SKIPOVER_ASCII_ART)
-
-
-/** These message codes comprise every possible message that can be output by
- ** Tidy that are *not* diagnostic style messages, and are *not* console
- ** application specific messages.
- */
-#define FOREACH_MSG_MISC(FN) \
-/** Point to Accessibility Guidelines. */             FN(ACCESS_URL)                 \
-/** Point to Tidy accessibility page. */              FN(ATRC_ACCESS_URL)            \
-/** File can't be opened. */                          FN(FILE_CANT_OPEN)             \
-/* Localized `line %d column %d` text. */            FN(LINE_COLUMN_STRING)         \
-/* For `discarding`. */                              FN(STRING_DISCARDING)          \
-/* `%u %s, %u %s were found!`. */                    FN(STRING_ERROR_COUNT)         \
-/* `error` and `errors`. */                          FN(STRING_ERROR_COUNT_ERROR)   \
-/* `warning` and `warnings`. */                      FN(STRING_ERROR_COUNT_WARNING) \
-/* Accessibility hello message. */                   FN(STRING_HELLO_ACCESS)        \
-/* `No warnings or errors were found.\n\n`. */       FN(STRING_NO_ERRORS)           \
-/* ` Not all warnings/errors were shown.\n\n`. */    FN(STRING_NOT_ALL_SHOWN)       \
-/* For `plain text`. */                              FN(STRING_PLAIN_TEXT)          \
-/* For `replacing`. */                               FN(STRING_REPLACING)           \
-/* For `specified`. */                               FN(STRING_SPECIFIED)           \
-/* For `XML declaration`. */                         FN(STRING_XML_DECLARATION)     \
-/* Explanatory text. */                              FN(TEXT_ACCESS_ADVICE1)        \
-/* Explanatory text. */                              FN(TEXT_ACCESS_ADVICE2)        \
-/* Explanatory text. */                              FN(TEXT_BAD_FORM)              \
-/* Explanatory text. */                              FN(TEXT_BAD_MAIN)              \
-/* Explanatory text. */                              FN(TEXT_GENERAL_INFO)          \
-/* Explanatory text. */                              FN(TEXT_GENERAL_INFO_PLEA)     \
-/* Describes the HTML table algorithm. */            FN(TEXT_HTML_T_ALGORITHM)      \
-/* Explanatory text. */                              FN(TEXT_INVALID_URI)           \
-/* Explanatory text. */                              FN(TEXT_INVALID_UTF16)         \
-/* Explanatory text. */                              FN(TEXT_INVALID_UTF8)          \
-/* Explanatory text. */                              FN(TEXT_M_IMAGE_ALT)           \
-/* Explanatory text. */                              FN(TEXT_M_IMAGE_MAP)           \
-/* Explanatory text. */                              FN(TEXT_M_LINK_ALT)            \
-/* Explanatory text. */                              FN(TEXT_M_SUMMARY)             \
-/* Explanatory text. */                              FN(TEXT_NEEDS_INTERVENTION)    \
-/* Explanatory text. */                              FN(TEXT_SGML_CHARS)            \
-/* Explanatory text. */                              FN(TEXT_USING_BODY)            \
-/* Explanatory text. */                              FN(TEXT_USING_FONT)            \
-/* Explanatory text. */                              FN(TEXT_USING_FRAMES)          \
-/* Explanatory text. */                              FN(TEXT_USING_LAYER)           \
-/* Explanatory text. */                              FN(TEXT_USING_NOBR)            \
-/* Explanatory text. */                              FN(TEXT_USING_SPACER)          \
-/* Explanatory text. */                              FN(TEXT_VENDOR_CHARS)          \
-/* Explanatory text. */                              FN(TEXT_WINDOWS_CHARS)
-
-
-/** These message codes comprise every message is exclusive to theTidy console
- ** application. It it possible to build LibTidy without these strings.
- */
-#if SUPPORT_CONSOLE_APP
-#define FOREACH_MSG_CONSOLE(FN) \
-        FN(TC_LABEL_COL)                    \
-        FN(TC_LABEL_FILE)                   \
-        FN(TC_LABEL_LANG)                   \
-        FN(TC_LABEL_LEVL)                   \
-        FN(TC_LABEL_OPT)                    \
-        FN(TC_MAIN_ERROR_LOAD_CONFIG)       \
-        FN(TC_OPT_ACCESS)                   \
-        FN(TC_OPT_ASCII)                    \
-        FN(TC_OPT_ASHTML)                   \
-        FN(TC_OPT_ASXML)                    \
-        FN(TC_OPT_BARE)                     \
-        FN(TC_OPT_BIG5)                     \
-        FN(TC_OPT_CLEAN)                    \
-        FN(TC_OPT_CONFIG)                   \
-        FN(TC_OPT_ERRORS)                   \
-        FN(TC_OPT_FILE)                     \
-        FN(TC_OPT_GDOC)                     \
-        FN(TC_OPT_HELP)                     \
-        FN(TC_OPT_HELPCFG)                  \
-        FN(TC_OPT_HELPOPT)                  \
-        FN(TC_OPT_IBM858)                   \
-        FN(TC_OPT_INDENT)                   \
-        FN(TC_OPT_ISO2022)                  \
-        FN(TC_OPT_LANGUAGE)                 \
-        FN(TC_OPT_LATIN0)                   \
-        FN(TC_OPT_LATIN1)                   \
-        FN(TC_OPT_MAC)                      \
-        FN(TC_OPT_MODIFY)                   \
-        FN(TC_OPT_NUMERIC)                  \
-        FN(TC_OPT_OMIT)                     \
-        FN(TC_OPT_OUTPUT)                   \
-        FN(TC_OPT_QUIET)                    \
-        FN(TC_OPT_RAW)                      \
-        FN(TC_OPT_SHIFTJIS)                 \
-        FN(TC_OPT_SHOWCFG)                  \
-        FN(TC_OPT_UPPER)                    \
-        FN(TC_OPT_UTF16)                    \
-        FN(TC_OPT_UTF16BE)                  \
-        FN(TC_OPT_UTF16LE)                  \
-        FN(TC_OPT_UTF8)                     \
-        FN(TC_OPT_VERSION)                  \
-        FN(TC_OPT_WIN1252)                  \
-        FN(TC_OPT_WRAP)                     \
-        FN(TC_OPT_XML)                      \
-        FN(TC_OPT_XMLCFG)                   \
-        FN(TC_OPT_XMLSTRG)                  \
-        FN(TC_OPT_XMLERRS)                  \
-        FN(TC_OPT_XMLOPTS)                  \
-        FN(TC_OPT_XMLHELP)                  \
-        FN(TC_STRING_CONF_HEADER)           \
-        FN(TC_STRING_CONF_NAME)             \
-        FN(TC_STRING_CONF_TYPE)             \
-        FN(TC_STRING_CONF_VALUE)            \
-        FN(TC_STRING_CONF_NOTE)             \
-        FN(TC_STRING_OPT_NOT_DOCUMENTED)    \
-        FN(TC_STRING_OUT_OF_MEMORY)         \
-        FN(TC_STRING_FATAL_ERROR)           \
-        FN(TC_STRING_FILE_MANIP)            \
-        FN(TC_STRING_LANG_MUST_SPECIFY)     \
-        FN(TC_STRING_LANG_NOT_FOUND)        \
-        FN(TC_STRING_MUST_SPECIFY)          \
-        FN(TC_STRING_PROCESS_DIRECTIVES)    \
-        FN(TC_STRING_CHAR_ENCODING)         \
-        FN(TC_STRING_MISC)                  \
-        FN(TC_STRING_XML)                   \
-        FN(TC_STRING_UNKNOWN_OPTION)        \
-        FN(TC_STRING_UNKNOWN_OPTION_B)      \
-        FN(TC_STRING_VERS_A)                \
-        FN(TC_STRING_VERS_B)                \
-        FN(TC_TXT_HELP_1)                   \
-        FN(TC_TXT_HELP_2A)                  \
-        FN(TC_TXT_HELP_2B)                  \
-        FN(TC_TXT_HELP_3)                   \
-        FN(TC_TXT_HELP_CONFIG)              \
-        FN(TC_TXT_HELP_CONFIG_NAME)         \
-        FN(TC_TXT_HELP_CONFIG_TYPE)         \
-        FN(TC_TXT_HELP_CONFIG_ALLW)         \
-        FN(TC_TXT_HELP_LANG_1)              \
-        FN(TC_TXT_HELP_LANG_2)              \
-        FN(TC_TXT_HELP_LANG_3)
-#endif /* SUPPORT_CONSOLE_APP */
-
-/** @} */
-/** @} end group internal_api */
-    
     
 /* MARK: - Public Enumerations (con't) */
 /** @addtogroup public_enumerations
@@ -1357,15 +1353,19 @@ typedef enum
  ** @{ */
 
 /** The enumeration contains a list of every possible string that Tidy and the
- ** console application can output. They are used as keys internally within
- ** Tidy, and have corresponding text keys that are used in message callback
- ** filters (these are defined in `tidyErrorFilterKeysStruct[]`, but API users
- ** don't require access to it directly).
+ ** console application can output, _except_ for strings from the following
+ ** enumerations:
+ ** - `tidyConfigCategory`
+ ** - tbd...
+ **
+ ** They are used as keys internally within Tidy, and have corresponding text
+ ** keys that are used in message callback filters (these are defined in
+ ** `tidyStringsKeys[]`, but API users don't require access to it directly).
  */
 typedef enum
 {
     /* This MUST be present and first. */
-    tidyStrings_first = 500,
+    TIDYSTRINGS_FIRST = 500,
     
     FOREACH_MSG_ENTITIES(MAKE_ENUM)
     FOREACH_MSG_ELEMENT(MAKE_ENUM)
@@ -1385,7 +1385,7 @@ typedef enum
 #endif
 
     /* This MUST be present and last. */
-    tidyStrings_last
+    TIDYSTRINGS_LAST
 
 } tidyStrings;
 
